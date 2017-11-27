@@ -22,18 +22,22 @@ class Kante {
 
 class Wand extends Kante {
 
+	@Override
 	boolean eintreten(Roboter roboter) {
 		return false;
 	}
 
+	@Override
 	boolean austreten(Roboter roboter) {
 		return false;
 	}
 
+	@Override
 	boolean reinlaserbar() {
 		return false;
 	}
 
+	@Override
 	boolean rauslaserbar() {
 		return false;
 	}
@@ -42,11 +46,13 @@ class Wand extends Kante {
 
 class Schlucht extends Kante {
 
+	@Override
 	boolean eintreten(Roboter roboter) {
 		roboter.zerstoeren();
 		return false;
 	}
 
+	@Override
 	boolean austreten(Roboter roboter) {
 		return this.eintreten(roboter);
 	}
@@ -55,10 +61,12 @@ class Schlucht extends Kante {
 
 class Einbahn_rein extends Kante {
 
+	@Override
 	boolean austreten(Roboter roboter) {
 		return false;
 	}
 
+	@Override
 	boolean rauslaserbar() {
 		return false;
 	}
@@ -67,10 +75,12 @@ class Einbahn_rein extends Kante {
 
 class Einbahn_raus extends Kante {
 
+	@Override
 	boolean eintreten(Roboter roboter) {
 		return false;
 	}
 
+	@Override
 	boolean reinlaserbar() {
 		return false;
 	}
@@ -79,8 +89,9 @@ class Einbahn_raus extends Kante {
 
 class Laser extends Wand {
 
+	@Override
 	void ausfuehren(Feld feld, int richtung, Spielzustand zustand) {
-		feld.durchlasern(richtung, zustand);
+		feld.durchlasern((richtung + 3) % 6, zustand);
 	}
 
 }

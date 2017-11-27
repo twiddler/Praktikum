@@ -1,4 +1,4 @@
-class Roboter {
+class Roboter implements Cloneable {
 
 	int position;
 	int blickrichtung;
@@ -7,70 +7,80 @@ class Roboter {
 	int geld;
 	boolean wurdeZerstoert = false;
 
-	public Roboter(Roboter roboter) {
-		this.position = roboter.position;
-		this.blickrichtung = roboter.blickrichtung;
-		this.leben = roboter.leben;
-		this.gesundheit = roboter.gesundheit;
-		this.geld = roboter.geld;
-		this.wurdeZerstoert = roboter.wurdeZerstoert;
+	Roboter(int position, int blickrichtung, int leben, int gesundheit, int geld) {
+		this.position = position;
+		this.blickrichtung = blickrichtung;
+		this.leben = leben;
+		this.gesundheit = gesundheit;
+		this.geld = geld;
 	}
 
-	public void drehen(int drehung) {
+	@Override
+	public Roboter clone() {
+		Roboter result = null;
+		try {
+			result = (Roboter) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	void drehen(int drehung) {
 		this.blickrichtung = (drehung + this.blickrichtung) % 6;
 	}
 
-	public void laufen(int schritte, Spielzustand zustand) {
+	void laufen(int schritte, Spielzustand zustand) {
 		for (int i = 0; i < schritte; ++i) {
 			if (wurdeZerstoert) {
 				return;
 			}
 
-			Feld feld = zustand.feldAnPosition(position);
+			Feld feld = zustand.feldAufPosition(position);
 			if (feld.verlassen(this, blickrichtung)) {
-				zustand.feldAnPosition(feld.nachbarn[position]).betreten(this);
+				zustand.feldAufPosition(feld.nachbarn[position]).betreten(this);
 			}
 		}
 	}
 
-	public void zerstoeren() {
+	void zerstoeren() {
 		this.wurdeZerstoert = true;
-		this.leben--;
-		this.gesundheit = Parameter.MAX_HEALTH_AFTER_DEATH;
+		--this.leben;
+		this.gesundheit = Parameter.MAX_GESUNDHEIT_NACH_TOD;
 
-		// to do
+		// TODO: Roboter respawnen bei letzter Flagge oder Start
 	}
 
-	public void gesundheitVerringern() {
+	void gesundheitVerringern() {
 		--this.gesundheit;
 		if (this.gesundheit <= 0) {
 			this.zerstoeren();
 		}
 	}
 
-	public void reparieren(int heal) {
-		this.gesundheit += heal;
-		if (this.gesundheit > Parameter.MAX_HEALTH) {
-			this.gesundheit = Parameter.MAX_HEALTH;
+	void reparieren(int gesundheit) {
+		this.gesundheit += gesundheit;
+		if (this.gesundheit > Parameter.MAX_GESUNDHEIT) {
+			this.gesundheit = Parameter.MAX_GESUNDHEIT;
 		}
 	}
 
-	public void setzeAufFeld(int position) {
-		this.position = position;
-	}
-
-	public void erhalteGeld(int geld) {
+	void erhalteGeld(int geld) {
 		this.geld += geld;
 	}
 
-	public void lasern(Spielzustand zustand) {
-		Feld feld = zustand.feldAnPosition(this.position);
+	void lasern(Spielzustand zustand) {
+		Feld feld = zustand.feldAufPosition(this.position);
 		int richtung = this.blickrichtung;
-		Feld nachbar = zustand.feldAnPosition(feld.nachbarn[richtung]);
+		Feld nachbar = zustand.feldAufPosition(feld.nachbarn[richtung]);
 		if (feld.kanteInRichtung(richtung).rauslaserbar()
 				&& nachbar.kanteInRichtung((richtung + 3) % 6).reinlaserbar()) {
 			nachbar.durchlasern(richtung, zustand);
 		}
+	}
+
+	boolean stehtAufPosition(int position) {
+		return this.position == position;
 	}
 
 }
