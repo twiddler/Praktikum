@@ -11,22 +11,22 @@ class Feld implements Cloneable {
 	/**
 	 * Indizes der angrenzenden Felder, in Reihenfolge
 	 */
-	int[] nachbarn;
+	final int[] nachbarn;
 
 	/**
 	 * Kanten des Feldes, in Reihenfolge
 	 */
-	Kante[] kanten;
+	final Kante[] kanten;
 
-	Zusatz zusatz;
+	final Zusatz zusatz;
 	private int drehung;
 
 	/**
 	 * Index dieses Feldes
 	 */
-	int position;
+	final int position;
 
-	Feld(int[] nachbarn, Kante[] kanten, Zusatz zusatz, int drehung, int position) {
+	Feld(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position) {
 		this.nachbarn = nachbarn;
 		this.kanten = kanten;
 		this.zusatz = zusatz;
@@ -48,9 +48,9 @@ class Feld implements Cloneable {
 	/**
 	 * Dreht das Feld und Roboter darauf.
 	 */
-	void drehen(int drehung, Roboter[] roboter) {
+	final void drehen(final int drehung, final Roboter[] roboter) {
 		this.drehung = (drehung + this.drehung) % 6;
-		for (Roboter r : roboter) {
+		for (final Roboter r : roboter) {
 			if (r.stehtAufPosition(this.position)) {
 				r.drehen(drehung);
 			}
@@ -61,13 +61,13 @@ class Feld implements Cloneable {
 	 * Führt die Fähigkeit am Zugende aus, bspw. sollen Zahltagfelder Geld
 	 * auszahlen.
 	 */
-	void ausfuehren(Spielzustand zustand) {
+	void ausfuehren(final Spielzustand zustand) {
 	}
 
 	/**
 	 * Führt die Fähigkeit der Kanten aus. Also letztendlich nur die Laser.
 	 */
-	void kantenAusfuehren(Spielzustand zustand) {
+	final void kantenAusfuehren(final Spielzustand zustand) {
 		for (int i = 0; i < this.kanten.length; ++i) {
 			this.kanten[i].ausfuehren(zustand.feldAufPosition(this.position), i, zustand);
 		}
@@ -76,14 +76,14 @@ class Feld implements Cloneable {
 	/**
 	 * Führt den Feldzusatz (Zahltag oder Presse) aus.
 	 */
-	void feldzusatzAusfuehren(Spielzustand zustand) {
+	final void feldzusatzAusfuehren(final Spielzustand zustand) {
 		this.zusatz.ausfuehren(this.position, zustand);
 	}
 
 	/**
 	 * Gibt die Kante in gegebener Richtung als Objekt zurück.
 	 */
-	Kante kanteInRichtung(int richtung) {
+	final Kante kanteInRichtung(final int richtung) {
 		return this.kanten[(this.drehung + richtung) % 6];
 	}
 
@@ -92,7 +92,7 @@ class Feld implements Cloneable {
 	 * der Roboter auf das Feld hier gesetzt, und die Fähigkeit beim Betreten des
 	 * Feldes ausgeführt. Bspw. soll ein Loch den betretenden Roboter umbringen.
 	 */
-	void betreten(Roboter roboter) {
+	void betreten(final Roboter roboter) {
 		// Richtung aus der der Roboter kommt bestimmen
 		int richtung = -1;
 		for (int i = 0; i < this.nachbarn.length; ++i) {
@@ -115,7 +115,7 @@ class Feld implements Cloneable {
 	 * Versucht die Kante in dieser Richtung zu übertreten, und gibt den Erfolg
 	 * zurück.
 	 */
-	boolean verlassen(Roboter roboter, int richtung) {
+	final boolean verlassen(final Roboter roboter, final int richtung) {
 		return this.kanteInRichtung(richtung).austreten(roboter);
 	}
 
@@ -123,15 +123,15 @@ class Feld implements Cloneable {
 	 * Lässt Roboter auf dem aktuellen Feld vom Laser getroffen werden bzw. schickt
 	 * den Laser ins nächste Feld falls keine Kante in dieser Richtung ihn aufhält.
 	 */
-	void durchlasern(int richtung, Spielzustand zustand) {
-		for (Roboter r : zustand.roboter) {
+	final void durchlasern(final int richtung, final Spielzustand zustand) {
+		for (final Roboter r : zustand.roboter) {
 			if (r.stehtAufPosition(this.position)) {
 				r.gesundheitVerringern();
 				return;
 			}
 		}
 
-		Feld nachbar = zustand.feldAufPosition(this.nachbarn[richtung]);
+		final Feld nachbar = zustand.feldAufPosition(this.nachbarn[richtung]);
 		if (this.kanteInRichtung(richtung).rauslaserbar()
 				&& nachbar.kanteInRichtung((richtung + 3) % 6).reinlaserbar()) {
 			nachbar.durchlasern(richtung, zustand);
@@ -140,41 +140,36 @@ class Feld implements Cloneable {
 
 }
 
-class Drehfeld extends Feld {
+final class Drehfeld extends Feld {
 
 	private int drehungUm;
 
-	Drehfeld(int[] nachbarn, Kante[] kanten, Zusatz zusatz, int drehung, int position, int drehungUm) {
+	Drehfeld(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position,
+			final int drehungUm) {
 		super(nachbarn, kanten, zusatz, drehung, position);
 		this.drehungUm = drehungUm;
 	}
 
 	@Override
-	void ausfuehren(Spielzustand zustand) {
+	void ausfuehren(final Spielzustand zustand) {
 		this.drehen(this.drehungUm, zustand.roboter);
-	}
-
-	@Override
-	public Drehfeld clone() {
-		Drehfeld result = (Drehfeld) super.clone();
-		result.drehungUm = this.drehungUm;
-		return result;
 	}
 
 }
 
-class Laufband extends Feld {
+final class Laufband extends Feld {
 
 	private int richtung;
 
-	Laufband(int[] nachbarn, Kante[] kanten, Zusatz zusatz, int drehung, int position, int richtung) {
+	Laufband(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position,
+			final int richtung) {
 		super(nachbarn, kanten, zusatz, drehung, position);
 		this.richtung = richtung;
 	}
 
 	@Override
-	void ausfuehren(Spielzustand zustand) {
-		for (Roboter r : zustand.roboter) {
+	void ausfuehren(final Spielzustand zustand) {
+		for (final Roboter r : zustand.roboter) {
 			if (r.stehtAufPosition(this.position)) {
 				if (this.verlassen(r, richtung)) {
 					zustand.feldAufPosition(this.nachbarn[richtung]).betreten(r);
@@ -183,50 +178,37 @@ class Laufband extends Feld {
 		}
 	}
 
-	@Override
-	public Laufband clone() {
-		Laufband result = (Laufband) super.clone();
-		result.richtung = this.richtung;
-		return result;
-	}
-
 }
 
-class Reparaturfeld extends Feld {
+final class Reparaturfeld extends Feld {
 
 	private int gesundheit;
 
-	Reparaturfeld(int[] nachbarn, Kante[] kanten, Zusatz zusatz, int drehung, int position, int gesundheit) {
+	Reparaturfeld(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung,
+			final int position, final int gesundheit) {
 		super(nachbarn, kanten, zusatz, drehung, position);
 		this.gesundheit = gesundheit;
 	}
 
 	@Override
-	void ausfuehren(Spielzustand zustand) {
-		for (Roboter r : zustand.roboter) {
+	void ausfuehren(final Spielzustand zustand) {
+		for (final Roboter r : zustand.roboter) {
 			if (r.stehtAufPosition(this.position)) {
 				r.reparieren(this.gesundheit);
 			}
 		}
 	}
 
-	@Override
-	public Reparaturfeld clone() {
-		Reparaturfeld result = (Reparaturfeld) super.clone();
-		result.gesundheit = this.gesundheit;
-		return result;
-	}
-
 }
 
-class Loch extends Feld {
+final class Loch extends Feld {
 
-	Loch(int[] nachbarn, Kante[] kanten, Zusatz zusatz, int drehung, int position) {
+	Loch(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position) {
 		super(nachbarn, kanten, zusatz, drehung, position);
 	}
 
 	@Override
-	void betreten(Roboter roboter) {
+	void betreten(final Roboter roboter) {
 		super.betreten(roboter);
 		roboter.zerstoeren();
 	}

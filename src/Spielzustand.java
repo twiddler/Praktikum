@@ -6,7 +6,7 @@
  * @author xXx Players xXx
  *
  */
-class Spielzustand implements Cloneable {
+final class Spielzustand implements Cloneable {
 
 	/**
 	 * Die zwei Roboter. roboter[0] sind wir, roboter[1] der Gegner.
@@ -42,7 +42,7 @@ class Spielzustand implements Cloneable {
 	 */
 	static int[] positionenMitLasern;
 
-	Spielzustand(Roboter[] roboter, Feld[] felder, int zug) {
+	Spielzustand(final Roboter[] roboter, final Feld[] felder, final int zug) {
 		this.roboter = roboter;
 		this.felder = felder;
 		this.zug = zug;
@@ -75,7 +75,7 @@ class Spielzustand implements Cloneable {
 	 * Hier ist noch unklar, wie die Karte einem Roboter zugeordnet wird.
 	 */
 	Spielzustand karteSpielen() {
-		Spielzustand result = this.clone();
+		final Spielzustand result = this.clone();
 
 		// TODO
 
@@ -87,27 +87,27 @@ class Spielzustand implements Cloneable {
 	 * Feldzusätze erreicht wird.
 	 */
 	Spielzustand feldaktionenAusfuehren() {
-		Spielzustand result = this.clone();
+		final Spielzustand result = this.clone();
 
 		// Sonderfelder
-		for (int[] positionen : Spielzustand.positionenMitSonderfeld) {
-			for (int position : positionen) {
+		for (final int[] positionen : Spielzustand.positionenMitSonderfeld) {
+			for (final int position : positionen) {
 				result.feldAufPosition(position).ausfuehren(result);
 			}
 		}
 
 		// Zahltage
-		for (int position : Spielzustand.positionenMitFeldzusatz[0]) {
+		for (final int position : Spielzustand.positionenMitFeldzusatz[0]) {
 			result.feldAufPosition(position).feldzusatzAusfuehren(result);
 		}
 
 		// Laser
-		for (int position : Spielzustand.positionenMitLasern) {
+		for (final int position : Spielzustand.positionenMitLasern) {
 			result.feldAufPosition(position).kantenAusfuehren(result);
 		}
 
 		// Pressen
-		for (int position : Spielzustand.positionenMitFeldzusatz[1]) {
+		for (final int position : Spielzustand.positionenMitFeldzusatz[1]) {
 			result.feldAufPosition(position).feldzusatzAusfuehren(result);
 		}
 
@@ -119,7 +119,7 @@ class Spielzustand implements Cloneable {
 	 * Zugnr. soll eins höher sein.
 	 */
 	Spielzustand roboterlaserFeuern() {
-		Spielzustand result = this.clone();
+		final Spielzustand result = this.clone();
 		for (int i = 0; i < result.roboter.length; ++i) {
 			result.roboter[i].lasern(this);
 		}
@@ -130,7 +130,7 @@ class Spielzustand implements Cloneable {
 	/**
 	 * Gibt das position-te Feld zurück.
 	 */
-	Feld feldAufPosition(int position) {
+	Feld feldAufPosition(final int position) {
 		return this.felder[position];
 	}
 }

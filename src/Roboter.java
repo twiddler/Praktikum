@@ -5,7 +5,7 @@
  * @author xXx Players xXx
  *
  */
-class Roboter implements Cloneable {
+final class Roboter implements Cloneable {
 
 	/**
 	 * Feld, auf dem der Roboter steht, referenziert durch dessen Position.
@@ -17,7 +17,7 @@ class Roboter implements Cloneable {
 	int geld;
 	boolean zerstoert = false;
 
-	Roboter(int position, int blickrichtung, int leben, int gesundheit, int geld) {
+	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld) {
 		this.position = position;
 		this.blickrichtung = blickrichtung;
 		this.leben = leben;
@@ -36,7 +36,7 @@ class Roboter implements Cloneable {
 		return result;
 	}
 
-	void drehen(int drehung) {
+	void drehen(final int drehung) {
 		this.blickrichtung = (drehung + this.blickrichtung) % 6;
 	}
 
@@ -45,7 +45,7 @@ class Roboter implements Cloneable {
 	 * mitteilen, dass er sie verlässt und betritt. Falls er zwischendurch stirbt,
 	 * soll er nicht mehr laufen.
 	 */
-	void laufen(int schritte, Spielzustand zustand) {
+	void laufen(final int schritte, final Spielzustand zustand) {
 		for (int i = 0; i < schritte; ++i) {
 			if (zerstoert) {
 				return;
@@ -82,31 +82,31 @@ class Roboter implements Cloneable {
 		}
 	}
 
-	void reparieren(int gesundheit) {
+	void reparieren(final int gesundheit) {
 		this.gesundheit += gesundheit;
 		if (this.gesundheit > Parameter.MAX_GESUNDHEIT) {
 			this.gesundheit = Parameter.MAX_GESUNDHEIT;
 		}
 	}
 
-	void erhalteGeld(int geld) {
+	void erhalteGeld(final int geld) {
 		this.geld += geld;
 	}
 
 	/**
 	 * Feuert den Laser des Roboters.
 	 */
-	void lasern(Spielzustand zustand) {
-		Feld feld = zustand.feldAufPosition(this.position);
-		int richtung = this.blickrichtung;
-		Feld nachbar = zustand.feldAufPosition(feld.nachbarn[richtung]);
+	void lasern(final Spielzustand zustand) {
+		final Feld feld = zustand.feldAufPosition(this.position);
+		final int richtung = this.blickrichtung;
+		final Feld nachbar = zustand.feldAufPosition(feld.nachbarn[richtung]);
 		if (feld.kanteInRichtung(richtung).rauslaserbar()
 				&& nachbar.kanteInRichtung((richtung + 3) % 6).reinlaserbar()) {
 			nachbar.durchlasern(richtung, zustand);
 		}
 	}
 
-	boolean stehtAufPosition(int position) {
+	boolean stehtAufPosition(final int position) {
 		return this.position == position;
 	}
 

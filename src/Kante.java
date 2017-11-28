@@ -14,7 +14,7 @@ class Kante {
 	 * Laserstrahl. Deshalb wird das Feld der Kante und die Richtung der Kante
 	 * mitgegeben.
 	 */
-	void ausfuehren(Feld feld, int richtung, Spielzustand zustand) {
+	void ausfuehren(final Feld feld, final int richtung, final Spielzustand zustand) {
 	}
 
 	/**
@@ -22,14 +22,14 @@ class Kante {
 	 * den Roboter ggf. um. Bspw. würde eine Wand den Roboter nicht übertreten
 	 * lassen, und eine Schlucht zusätzlich umbringen.
 	 */
-	boolean eintreten(Roboter roboter) {
+	boolean eintreten(final Roboter roboter) {
 		return true;
 	}
 
 	/**
 	 * Analog zu eintreten().
 	 */
-	boolean austreten(Roboter roboter) {
+	boolean austreten(final Roboter roboter) {
 		return true;
 	}
 
@@ -52,46 +52,46 @@ class Kante {
 class Wand extends Kante {
 
 	@Override
-	boolean eintreten(Roboter roboter) {
+	final boolean eintreten(final Roboter roboter) {
 		return false;
 	}
 
 	@Override
-	boolean austreten(Roboter roboter) {
+	final boolean austreten(final Roboter roboter) {
 		return false;
 	}
 
 	@Override
-	boolean reinlaserbar() {
+	final boolean reinlaserbar() {
 		return false;
 	}
 
 	@Override
-	boolean rauslaserbar() {
+	final boolean rauslaserbar() {
 		return false;
 	}
 
 }
 
-class Schlucht extends Kante {
+final class Schlucht extends Kante {
 
 	@Override
-	boolean eintreten(Roboter roboter) {
+	boolean eintreten(final Roboter roboter) {
 		roboter.zerstoeren();
 		return false;
 	}
 
 	@Override
-	boolean austreten(Roboter roboter) {
+	boolean austreten(final Roboter roboter) {
 		return this.eintreten(roboter);
 	}
 
 }
 
-class Einbahn_rein extends Kante {
+final class Einbahn_rein extends Kante {
 
 	@Override
-	boolean austreten(Roboter roboter) {
+	boolean austreten(final Roboter roboter) {
 		return false;
 	}
 
@@ -102,10 +102,10 @@ class Einbahn_rein extends Kante {
 
 }
 
-class Einbahn_raus extends Kante {
+final class Einbahn_raus extends Kante {
 
 	@Override
-	boolean eintreten(Roboter roboter) {
+	boolean eintreten(final Roboter roboter) {
 		return false;
 	}
 
@@ -116,10 +116,10 @@ class Einbahn_raus extends Kante {
 
 }
 
-class Laser extends Wand {
+final class Laser extends Wand {
 
 	@Override
-	void ausfuehren(Feld feld, int richtung, Spielzustand zustand) {
+	void ausfuehren(final Feld feld, final int richtung, final Spielzustand zustand) {
 		feld.durchlasern((richtung + 3) % 6, zustand);
 	}
 

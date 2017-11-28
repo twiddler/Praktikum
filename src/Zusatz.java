@@ -11,22 +11,22 @@ class Zusatz {
 	/**
 	 * Führt den Feldzusatz aus.
 	 */
-	void ausfuehren(int position, Spielzustand zustand) {
+	void ausfuehren(final int position, final Spielzustand zustand) {
 	}
 
 }
 
-class Zahltag extends Zusatz {
+final class Zahltag extends Zusatz {
 
-	private int auszahlung;
+	private final int auszahlung;
 
 	Zahltag(int auszahlung) {
 		this.auszahlung = auszahlung;
 	}
 
 	@Override
-	void ausfuehren(int position, Spielzustand zustand) {
-		for (Roboter r : zustand.roboter) {
+	void ausfuehren(final int position, final Spielzustand zustand) {
+		for (final Roboter r : zustand.roboter) {
 			if (r.stehtAufPosition(position)) {
 				r.erhalteGeld(this.auszahlung);
 			}
@@ -35,18 +35,18 @@ class Zahltag extends Zusatz {
 
 }
 
-class Presse extends Zusatz {
+final class Presse extends Zusatz {
 
-	private boolean[] aktivInZuegen;
+	private final boolean[] aktivInZuegen;
 
-	Presse(boolean[] aktivInZuegen) {
+	Presse(final boolean[] aktivInZuegen) {
 		this.aktivInZuegen = aktivInZuegen;
 	}
 
 	@Override
-	void ausfuehren(int position, Spielzustand zustand) {
+	void ausfuehren(final int position, final Spielzustand zustand) {
 		if (aktivInZuegen[zustand.zug]) {
-			for (Roboter r : zustand.roboter) {
+			for (final Roboter r : zustand.roboter) {
 				if (r.stehtAufPosition(position)) {
 					r.zerstoeren();
 				}
