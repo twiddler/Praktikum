@@ -1,5 +1,16 @@
+
+/**
+ * Feldzusätze in der Mitte von Spielfeldern, also Zahltage und Pressen.
+ * 
+ * @author xXx Players xXx
+ *
+ */
+
 class Zusatz {
 
+	/**
+	 * Führt den Feldzusatz aus.
+	 */
 	void ausfuehren(int position, Spielzustand zustand) {
 	}
 
