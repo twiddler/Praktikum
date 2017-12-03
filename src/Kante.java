@@ -22,14 +22,14 @@ class Kante {
 	 * den Roboter ggf. um. Bspw. würde eine Wand den Roboter nicht übertreten
 	 * lassen, und eine Schlucht zusätzlich umbringen.
 	 */
-	boolean eintreten(final Roboter roboter) {
+	boolean eintreten(final Bewegbar b, final Spielzustand zustand) {
 		return true;
 	}
 
 	/**
 	 * Analog zu eintreten().
 	 */
-	boolean austreten(final Roboter roboter) {
+	boolean austreten(final Bewegbar b, final Spielzustand zustand) {
 		return true;
 	}
 
@@ -52,12 +52,12 @@ class Kante {
 class Wand extends Kante {
 
 	@Override
-	final boolean eintreten(final Roboter roboter) {
+	final boolean eintreten(final Bewegbar b, final Spielzustand zustand) {
 		return false;
 	}
 
 	@Override
-	final boolean austreten(final Roboter roboter) {
+	final boolean austreten(final Bewegbar b, final Spielzustand zustand) {
 		return false;
 	}
 
@@ -76,14 +76,16 @@ class Wand extends Kante {
 final class Schlucht extends Kante {
 
 	@Override
-	boolean eintreten(final Roboter roboter) {
-		roboter.zerstoeren();
+	boolean eintreten(final Bewegbar b, final Spielzustand zustand) {
+		if (b instanceof Roboter) {
+			((Roboter) b).zerstoeren(zustand);
+		}
 		return false;
 	}
 
 	@Override
-	boolean austreten(final Roboter roboter) {
-		return this.eintreten(roboter);
+	boolean austreten(final Bewegbar b, final Spielzustand zustand) {
+		return this.eintreten(b, zustand);
 	}
 
 }
@@ -91,7 +93,7 @@ final class Schlucht extends Kante {
 final class Einbahn_rein extends Kante {
 
 	@Override
-	boolean austreten(final Roboter roboter) {
+	boolean austreten(final Bewegbar b, final Spielzustand zustand) {
 		return false;
 	}
 
@@ -105,7 +107,7 @@ final class Einbahn_rein extends Kante {
 final class Einbahn_raus extends Kante {
 
 	@Override
-	boolean eintreten(final Roboter roboter) {
+	boolean eintreten(final Bewegbar b, final Spielzustand zustand) {
 		return false;
 	}
 

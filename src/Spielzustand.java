@@ -71,8 +71,11 @@ final class Spielzustand implements Cloneable {
 		for (int i = 0; i < this.felder.length; i++) {
 			result.felder[i] = this.felder[i].clone();
 		}
-		
-		// TODO: Flaggen klonen
+
+		result.flaggen = new Flagge[this.flaggen.length];
+		for (int i = 0; i < this.flaggen.length; i++) {
+			result.flaggen[i] = this.flaggen[i].clone();
+		}
 
 		return result;
 	}
@@ -95,52 +98,50 @@ final class Spielzustand implements Cloneable {
 	 * Gibt den Spielzustand zurück, der durchs Ausführen der Aktionsfelder und
 	 * Feldzusätze erreicht wird.
 	 */
-	Spielzustand feldaktionenAusfuehren() {
-		final Spielzustand result = this.clone();
-
+	void feldaktionenAusfuehren() {
 		// Sonderfelder
 		for (final int[] positionen : Spielzustand.positionenMitSonderfeld) {
 			for (final int position : positionen) {
-				result.feldAufPosition(position).ausfuehren(result);
+				this.feldAufPosition(position).ausfuehren(this);
 			}
 		}
 
 		// Zahltage
 		for (final int position : Spielzustand.positionenMitFeldzusatz[0]) {
-			result.feldAufPosition(position).feldzusatzAusfuehren(result);
+			this.feldAufPosition(position).feldzusatzAusfuehren(this);
 		}
 
 		// Laser
 		for (final int position : Spielzustand.positionenMitLasern) {
-			result.feldAufPosition(position).kantenAusfuehren(result);
+			this.feldAufPosition(position).kantenAusfuehren(this);
 		}
 
 		// Pressen
 		for (final int position : Spielzustand.positionenMitFeldzusatz[1]) {
-			result.feldAufPosition(position).feldzusatzAusfuehren(result);
+			this.feldAufPosition(position).feldzusatzAusfuehren(this);
 		}
-
-		return result;
 	}
 
-	/**
-	 * Gibt den Spielzustand nach dem Feuern beider Roboterlaser und dem Einsammeln
-	 * von Flaggen zurück. Dessen Zugnr. soll eins höher sein.
-	 */
-	Spielzustand roboterlaserFeuern() {
-		final Spielzustand result = this.clone();
-
-		for (final Roboter r : result.roboter) {
-			r.lasern(result);
+	void roboterlaserFeuern() {
+		for (final Roboter r : this.roboter) {
+			r.lasern(this);
 		}
+	}
 
-		// Flaggen werden jetzt berührt
-		for (final Flagge flagge : result.flaggen) {
-			for (final Roboter r : result.roboter) {
-				flagge.beruehren(r);
+	void flaggenBeruehren() {
+		for (final Flagge flagge : this.flaggen) {
+			for (final Roboter r : this.roboter) {
+				flagge.beruehren(r, this);
 			}
 		}
+	}
 
+	Spielzustand zugBeenden() {
+		Spielzustand result = this.clone();
+
+		result.feldaktionenAusfuehren();
+		result.roboterlaserFeuern();
+		result.flaggenBeruehren();
 		++result.zug;
 
 		return result;
@@ -151,5 +152,9 @@ final class Spielzustand implements Cloneable {
 	 */
 	Feld feldAufPosition(final int position) {
 		return this.felder[position];
+	}
+
+	boolean istLetzterZug() {
+		return this.zug == Parameter.ZUEGE_PRO_RUNDE - 1;
 	}
 }

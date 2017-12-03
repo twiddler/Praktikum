@@ -3,15 +3,14 @@
  * @author xXx Players xXx
  *
  */
-final class Flagge implements Cloneable {
 
-	/**
-	 * Feld, auf dem der Roboter steht, referenziert durch dessen Position.
-	 */
-	int position;
+final class Flagge extends Bewegbar implements Cloneable {
 
-	Flagge(final int position) {
+	int nummer;
+
+	Flagge(final int position, final int nummer) {
 		this.position = position;
+		this.nummer = nummer;
 	}
 
 	@Override
@@ -24,15 +23,13 @@ final class Flagge implements Cloneable {
 		}
 		return result;
 	}
-	
-	boolean stehtAufPosition(final int position) {
-		return this.position == position;
-	}
 
-	void beruehren(Roboter roboter) {
-		if (roboter.stehtAufPosition(this.position)) {
-			roboter.position = this.position;
+	void beruehren(final Roboter roboter, final Spielzustand zustand) {
+		if (roboter.stehtAufPosition(this.position) && this.nummer == roboter.letzteFlagge + 1) {
+			if (this.nummer < Parameter.ANZAHL_FLAGGEN - 1 || zustand.istLetzterZug()) {
+				roboter.letzteFlagge = this.nummer;
+			}
 		}
 	}
-	
+
 }

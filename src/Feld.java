@@ -92,11 +92,11 @@ class Feld implements Cloneable {
 	 * der Roboter auf das Feld hier gesetzt, und die Fähigkeit beim Betreten des
 	 * Feldes ausgeführt. Bspw. soll ein Loch den betretenden Roboter umbringen.
 	 */
-	void betreten(final Roboter roboter) {
+	void betreten(final Bewegbar b, final Spielzustand zustand) {
 		// Richtung aus der der Roboter kommt bestimmen
 		int richtung = -1;
 		for (int i = 0; i < this.nachbarn.length; ++i) {
-			if (roboter.stehtAufPosition(this.nachbarn[i])) {
+			if (b.stehtAufPosition(this.nachbarn[i])) {
 				richtung = i;
 				break;
 			}
@@ -106,8 +106,8 @@ class Feld implements Cloneable {
 			System.err.println("Fehler beim Bestimmen der Richtung");
 		}
 
-		if (this.kanteInRichtung(richtung).eintreten(roboter)) {
-			roboter.position = this.position;
+		if (this.kanteInRichtung(richtung).eintreten(b, zustand)) {
+			b.position = this.position;
 		}
 	}
 
@@ -115,8 +115,8 @@ class Feld implements Cloneable {
 	 * Versucht die Kante in dieser Richtung zu übertreten, und gibt den Erfolg
 	 * zurück.
 	 */
-	final boolean verlassen(final Roboter roboter, final int richtung) {
-		return this.kanteInRichtung(richtung).austreten(roboter);
+	final boolean verlassen(final Bewegbar b, final int richtung, final Spielzustand zustand) {
+		return this.kanteInRichtung(richtung).austreten(b, zustand);
 	}
 
 	/**
@@ -126,7 +126,7 @@ class Feld implements Cloneable {
 	final void durchlasern(final int richtung, final Spielzustand zustand) {
 		for (final Roboter r : zustand.roboter) {
 			if (r.stehtAufPosition(this.position)) {
-				r.gesundheitVerringern();
+				r.gesundheitVerringern(zustand);
 				return;
 			}
 		}
@@ -171,17 +171,17 @@ final class Laufband extends Feld {
 	void ausfuehren(final Spielzustand zustand) {
 		for (final Roboter r : zustand.roboter) {
 			if (r.stehtAufPosition(this.position)) {
-				if (this.verlassen(r, richtung)) {
-					zustand.feldAufPosition(this.nachbarn[richtung]).betreten(r);
+				if (this.verlassen(r, richtung, zustand)) {
+					zustand.feldAufPosition(this.nachbarn[richtung]).betreten(r, zustand);
 				}
 			}
 		}
-		
+
 		for (final Flagge flagge : zustand.flaggen) {
 			if (flagge.stehtAufPosition(this.position)) {
-
-				// TODO: Flagge verschieben
-				
+				if (this.verlassen(flagge, richtung, zustand)) {
+					zustand.feldAufPosition(this.nachbarn[richtung]).betreten(flagge, zustand);
+				}
 			}
 		}
 	}
@@ -216,9 +216,11 @@ final class Loch extends Feld {
 	}
 
 	@Override
-	void betreten(final Roboter roboter) {
-		super.betreten(roboter);
-		roboter.zerstoeren();
+	void betreten(final Bewegbar b, final Spielzustand zustand) {
+		super.betreten(b, zustand);
+		if (b instanceof Roboter) {
+			((Roboter) b).zerstoeren(zustand);
+		}
 	}
 
 }

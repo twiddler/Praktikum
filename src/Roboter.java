@@ -5,25 +5,26 @@
  * @author xXx Players xXx
  *
  */
-final class Roboter implements Cloneable {
+final class Roboter extends Bewegbar implements Cloneable {
 
 	/**
 	 * Feld, auf dem der Roboter steht, referenziert durch dessen Position.
 	 */
-	int position;
 	int blickrichtung;
 	int leben;
 	int gesundheit;
 	int geld;
 	boolean zerstoert = false;
 	Karte[] karten;
+	int letzteFlagge;
 
-	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld) {
+	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld, final int letzteFlagge) {
 		this.position = position;
 		this.blickrichtung = blickrichtung;
 		this.leben = leben;
 		this.gesundheit = gesundheit;
 		this.geld = geld;
+		this.letzteFlagge = letzteFlagge;
 	}
 
 	@Override
@@ -35,7 +36,10 @@ final class Roboter implements Cloneable {
 			e.printStackTrace();
 		}
 		
-		// TODO: Handkarten klonen
+		result.karten = new Karte[this.karten.length];
+		for(int i = 0; i < this.karten.length; i++) {
+			result.karten[i] = this.karten[i].clone();
+		}
 		
 		return result;
 	}
@@ -56,8 +60,8 @@ final class Roboter implements Cloneable {
 			}
 
 			Feld feld = zustand.feldAufPosition(position);
-			if (feld.verlassen(this, blickrichtung)) {
-				zustand.feldAufPosition(feld.nachbarn[position]).betreten(this);
+			if (feld.verlassen(this, blickrichtung, zustand)) {
+				zustand.feldAufPosition(feld.nachbarn[position]).betreten(this, zustand);
 			}
 		}
 	}
@@ -67,22 +71,26 @@ final class Roboter implements Cloneable {
 	 * nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw. auf das
 	 * Startfeld.
 	 */
-	void zerstoeren() {
+	void zerstoeren(final Spielzustand zustand) {
 		this.zerstoert = true;
 		--this.leben;
 		this.gesundheit = Parameter.MAX_GESUNDHEIT_NACH_TOD;
 
-		// TODO: Roboter respawnen bei letzter Flagge oder Start
+		if(this.letzteFlagge == -1) {
+			this.position = 0;
+		} else {
+			this.position = zustand.flaggen[letzteFlagge].position;
+		}
 	}
 
 	/**
 	 * Verringert die aktuelle Gesundheit um 1. Bei 0 soll der Roboter zerstört
 	 * werden.
 	 */
-	void gesundheitVerringern() {
+	void gesundheitVerringern(final Spielzustand zustand) {
 		--this.gesundheit;
 		if (this.gesundheit <= 0) {
-			this.zerstoeren();
+			this.zerstoeren(zustand);
 		}
 	}
 
@@ -107,10 +115,6 @@ final class Roboter implements Cloneable {
 				&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
 			nachbar.durchlasern(this.blickrichtung, zustand);
 		}
-	}
-
-	boolean stehtAufPosition(final int position) {
-		return this.position == position;
 	}
 
 }
