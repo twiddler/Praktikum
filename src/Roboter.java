@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 /**
  * Die Roboter.
@@ -15,7 +16,7 @@ final class Roboter extends Bewegbar implements Cloneable {
 	int gesundheit;
 	int geld;
 	boolean zerstoert = false;
-	Karte[] karten;
+	ArrayList<Karte> karten;
 	int letzteFlagge;
 
 	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld, final int letzteFlagge) {
@@ -36,9 +37,9 @@ final class Roboter extends Bewegbar implements Cloneable {
 			e.printStackTrace();
 		}
 		
-		result.karten = new Karte[this.karten.length];
-		for(int i = 0; i < this.karten.length; i++) {
-			result.karten[i] = this.karten[i].clone();
+		result.karten = new ArrayList<Karte>();
+		for(int i = 0; i < this.karten.size(); i++) {
+			result.karten.add(this.karten.get(i).clone());
 		}
 		
 		return result;
