@@ -105,7 +105,6 @@ public class Parser {
 	
 	
 	
-
 	static void setzeNachbarn(int index1, int index2, int rotation, int[][] felderNachbarn) {
 		felderNachbarn[index1][rotation] = index2;
 		felderNachbarn[index2][(rotation + 3) % 6] = index1;
