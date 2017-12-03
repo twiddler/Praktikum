@@ -1,6 +1,8 @@
 class Bewerter {
+	
+	final int anzahlBewertungen = 7;
 
-	static int[] bewerten(Spielzustand zustand) {
+	int[] bewerten(Spielzustand zustand) {
 		Roboter wir = zustand.roboter[0];
 		Roboter gegner = zustand.roboter[1];
 
@@ -10,12 +12,35 @@ class Bewerter {
 				wir.leben > 0 ? 1 : 0 };
 	}
 
-	static boolean besserAls(int[] a, int[] b) {
+	boolean istBesser(int[] a, int[] b) {
 		for (int i = 0; i < a.length; ++i) {
 			if (a[i] > b[i])
 				return true;
 		}
 		return false;
+	}
+	
+	int[] besseres(int[] a, int[] b) {
+		return istBesser(a, b) ? a : b;
+	}
+	
+	int[] schlechteres(int[] a, int[] b) {
+		return istBesser(b, a) ? a : b;
+	}
+	
+	int[] schlechtesterWert() {
+		int[] result = new int[anzahlBewertungen];
+		for(int i = 0; i < result.length; i++) {
+			result[i] = Integer.MIN_VALUE;
+		}
+		return result;
+	}
+	int[] besterWert() {
+		int[] result = new int[anzahlBewertungen];
+		for(int i = 0; i < result.length; i++) {
+			result[i] = Integer.MAX_VALUE;
+		}
+		return result;
 	}
 
 }
