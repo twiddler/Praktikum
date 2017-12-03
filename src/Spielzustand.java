@@ -1,7 +1,7 @@
 
 /**
- * Speichert den Zustand, in dem sich das Spiel befindet. Dazu zählen die
- * Verbindungen der Felder, Zustände der Roboter, usw..
+ * Speichert den Zustand, in dem sich das Spiel befindet. Dazu zï¿½hlen die
+ * Verbindungen der Felder, Zustï¿½nde der Roboter, usw..
  * 
  * @author xXx Players xXx
  *
@@ -29,11 +29,11 @@ final class Spielzustand implements Cloneable {
 	int zug;
 
 	/**
-	 * Indizes der Felder, in Reihenfolge der Ausführung: Aixpresslaufbänder,
-	 * Aixpresslaufbänder, Laufbänder, Drehscheiben, Reparaturfelder.
-	 * (Aixpresslaufbänder sind bei uns normale Laufbänder.) Da sich die Positionen
-	 * nicht ändern, ist dieses Feld Eigenschaft der Klasse, und muss nur einmal
-	 * befüllt werden.
+	 * Indizes der Felder, in Reihenfolge der Ausfï¿½hrung: Aixpresslaufbï¿½nder,
+	 * Aixpresslaufbï¿½nder, Laufbï¿½nder, Drehscheiben, Reparaturfelder.
+	 * (Aixpresslaufbï¿½nder sind bei uns normale Laufbï¿½nder.) Da sich die Positionen
+	 * nicht ï¿½ndern, ist dieses Feld Eigenschaft der Klasse, und muss nur einmal
+	 * befï¿½llt werden.
 	 */
 	static int[][] positionenMitSonderfeld;
 
@@ -47,10 +47,11 @@ final class Spielzustand implements Cloneable {
 	 */
 	static int[] positionenMitLasern;
 
-	Spielzustand(final Roboter[] roboter, final Feld[] felder, final int zug) {
+	Spielzustand(final Roboter[] roboter, final Feld[] felder, final int zug, Flagge[] flaggen) {
 		this.roboter = roboter;
 		this.felder = felder;
 		this.zug = zug;
+		this.flaggen = flaggen;
 	}
 
 	@Override
@@ -81,7 +82,7 @@ final class Spielzustand implements Cloneable {
 	}
 
 	/**
-	 * Gibt den Spielzustand zurück, der beim Spielen einer Karte erreicht wird.
+	 * Gibt den Spielzustand zurï¿½ck, der beim Spielen einer Karte erreicht wird.
 	 * Hier ist noch unklar, wie die Karte einem Roboter zugeordnet wird.
 	 */
 	Spielzustand karteSpielen(final Roboter roboter, final Karte karte) {
@@ -95,8 +96,8 @@ final class Spielzustand implements Cloneable {
 	}
 
 	/**
-	 * Gibt den Spielzustand zurück, der durchs Ausführen der Aktionsfelder und
-	 * Feldzusätze erreicht wird.
+	 * Gibt den Spielzustand zurï¿½ck, der durchs Ausfï¿½hren der Aktionsfelder und
+	 * Feldzusï¿½tze erreicht wird.
 	 */
 	void feldaktionenAusfuehren() {
 		// Sonderfelder
@@ -148,7 +149,7 @@ final class Spielzustand implements Cloneable {
 	}
 
 	/**
-	 * Gibt das position-te Feld zurück.
+	 * Gibt das position-te Feld zurï¿½ck.
 	 */
 	Feld feldAufPosition(final int position) {
 		return this.felder[position];
