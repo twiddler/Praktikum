@@ -19,6 +19,11 @@ final class Spielzustand implements Cloneable {
 	private Feld[] felder;
 
 	/**
+	 * Flaggen in aufsteigender Reihenfolge
+	 */
+	Flagge[] flaggen;
+
+	/**
 	 * Der wievielte Zug einer Runde es gerade ist.
 	 */
 	int zug;
@@ -66,6 +71,8 @@ final class Spielzustand implements Cloneable {
 		for (int i = 0; i < this.felder.length; i++) {
 			result.felder[i] = this.felder[i].clone();
 		}
+		
+		// TODO: Flaggen klonen
 
 		return result;
 	}
@@ -74,10 +81,12 @@ final class Spielzustand implements Cloneable {
 	 * Gibt den Spielzustand zurück, der beim Spielen einer Karte erreicht wird.
 	 * Hier ist noch unklar, wie die Karte einem Roboter zugeordnet wird.
 	 */
-	Spielzustand karteSpielen() {
+	Spielzustand karteSpielen(final Roboter roboter, final Karte karte) {
 		final Spielzustand result = this.clone();
 
-		// TODO
+		roboter.drehen(karte.drehung_roboter);
+		roboter.laufen(karte.schritte, result);
+		result.feldAufPosition(roboter.position).drehen(karte.drehung_feld, result.roboter);
 
 		return result;
 	}
@@ -115,15 +124,25 @@ final class Spielzustand implements Cloneable {
 	}
 
 	/**
-	 * Gibt den Spielzustand nach dem Feuern beider Roboterlaser zurück. Dessen
-	 * Zugnr. soll eins höher sein.
+	 * Gibt den Spielzustand nach dem Feuern beider Roboterlaser und dem Einsammeln
+	 * von Flaggen zurück. Dessen Zugnr. soll eins höher sein.
 	 */
 	Spielzustand roboterlaserFeuern() {
 		final Spielzustand result = this.clone();
-		for (int i = 0; i < result.roboter.length; ++i) {
-			result.roboter[i].lasern(this);
+
+		for (final Roboter r : result.roboter) {
+			r.lasern(result);
 		}
+
+		// Flaggen werden jetzt berührt
+		for (final Flagge flagge : result.flaggen) {
+			for (final Roboter r : result.roboter) {
+				flagge.beruehren(r);
+			}
+		}
+
 		++result.zug;
+
 		return result;
 	}
 

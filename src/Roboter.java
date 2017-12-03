@@ -16,6 +16,7 @@ final class Roboter implements Cloneable {
 	int gesundheit;
 	int geld;
 	boolean zerstoert = false;
+	Karte[] karten;
 
 	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld) {
 		this.position = position;
@@ -33,6 +34,9 @@ final class Roboter implements Cloneable {
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
 		}
+		
+		// TODO: Handkarten klonen
+		
 		return result;
 	}
 
@@ -98,11 +102,10 @@ final class Roboter implements Cloneable {
 	 */
 	void lasern(final Spielzustand zustand) {
 		final Feld feld = zustand.feldAufPosition(this.position);
-		final int richtung = this.blickrichtung;
-		final Feld nachbar = zustand.feldAufPosition(feld.nachbarn[richtung]);
-		if (feld.kanteInRichtung(richtung).rauslaserbar()
-				&& nachbar.kanteInRichtung((richtung + 3) % 6).reinlaserbar()) {
-			nachbar.durchlasern(richtung, zustand);
+		final Feld nachbar = zustand.feldAufPosition(feld.nachbarn[this.blickrichtung]);
+		if (feld.kanteInRichtung(this.blickrichtung).rauslaserbar()
+				&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
+			nachbar.durchlasern(this.blickrichtung, zustand);
 		}
 	}
 

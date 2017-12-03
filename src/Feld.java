@@ -69,7 +69,7 @@ class Feld implements Cloneable {
 	 */
 	final void kantenAusfuehren(final Spielzustand zustand) {
 		for (int i = 0; i < this.kanten.length; ++i) {
-			this.kanten[i].ausfuehren(zustand.feldAufPosition(this.position), i, zustand);
+			this.kanten[i].ausfuehren(zustand.feldAufPosition(this.position), (i + this.drehung) % 6, zustand);
 		}
 	}
 
@@ -84,7 +84,7 @@ class Feld implements Cloneable {
 	 * Gibt die Kante in gegebener Richtung als Objekt zurück.
 	 */
 	final Kante kanteInRichtung(final int richtung) {
-		return this.kanten[(this.drehung + richtung) % 6];
+		return this.kanten[(this.drehung - richtung) % 6];
 	}
 
 	/**
@@ -174,6 +174,14 @@ final class Laufband extends Feld {
 				if (this.verlassen(r, richtung)) {
 					zustand.feldAufPosition(this.nachbarn[richtung]).betreten(r);
 				}
+			}
+		}
+		
+		for (final Flagge flagge : zustand.flaggen) {
+			if (flagge.stehtAufPosition(this.position)) {
+
+				// TODO: Flagge verschieben
+				
 			}
 		}
 	}
