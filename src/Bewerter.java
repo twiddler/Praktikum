@@ -19,6 +19,14 @@ class Bewerter {
 		}
 		return false;
 	}
+
+	boolean istSchlechter(int[] a, int[] b) {
+		for (int i = 0; i < a.length; ++i) {
+			if (a[i] < b[i])
+				return true;
+		}
+		return false;
+	}
 	
 	int[] besseres(int[] a, int[] b) {
 		return istBesser(a, b) ? a : b;

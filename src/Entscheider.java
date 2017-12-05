@@ -1,125 +1,167 @@
+import java.util.*;
 
-public class Entscheider {
+class Entscheider {
 
 	Knoten wurzel;
 	Bewerter bewerter;
 
-	public Entscheider(Spielzustand zustand) {
+	Entscheider(Spielzustand zustand) {
 		this.wurzel = new Knoten(zustand);
 	}
 
-	int[] alphabeta(Knoten knoten, int tiefe, int[] alpha, int[] beta, int spieler, int prioritaet) {
-		int[] result;
-		if (tiefe == 0) {
-			return this.bewerter.bewerten(knoten.zustand);
-			 
+	int[] min_value(Knoten knoten, int prioritaet) {
+		int[] result = bewerter.besterWert();
+
+		for (Karte karte : knoten.zustand.roboter[0].karten) {
+			if (karte.prioritaet < prioritaet) {
+				Knoten kind = knoten.kindMitKarte(0, karte);
+				kind.bewertung = idk_value(kind);
+				if (bewerter.istSchlechter(kind.bewertung, result)) {
+					knoten.nachfolger = kind;
+					result = kind.bewertung;
+				}
+			}
 		}
 
-		if (spieler == 0) {
-			result = bewerter.schlechtesterWert();
-			for (Karte karte : knoten.zustand.roboter[0].karten) {
-				if (karte.prioritaet < prioritaet) {
-					Spielzustand neuerZustand = knoten.zustand.karteSpielen(knoten.zustand.roboter[0], karte);
-					Knoten neuerKnoten = new Knoten(neuerZustand);
-					knoten.karte = karte;
-					knoten.zustand.roboter[0].karten.remove(karte);
-					knoten.nachfolger.add(neuerKnoten);
-					result = bewerter.besseres(result,
-							alphabeta(neuerKnoten, tiefe - 1, alpha, beta, 2, Integer.MAX_VALUE));
-					alpha = bewerter.besseres(alpha, result);
-					if (bewerter.istBesser(alpha, beta)) {
-						break;
-					}
-
-				}
-			}
-			knoten.bewertung = result;
-			return result;
-
-		} else if (spieler == 1) {
-			result = bewerter.besterWert();
-			for (Karte karte : knoten.zustand.roboter[1].karten) {
-				if (karte.prioritaet < prioritaet) {
-					Spielzustand neuerZustand = knoten.zustand.karteSpielen(knoten.zustand.roboter[1], karte);
-					Knoten neuerKnoten = new Knoten(neuerZustand);
-					knoten.karte = karte;
-					knoten.zustand.roboter[1].karten.remove(karte);
-					knoten.nachfolger.add(neuerKnoten);
-					result = bewerter.schlechteres(result,
-							alphabeta(neuerKnoten, tiefe - 1, alpha, beta, 2, Integer.MAX_VALUE));
-					beta = bewerter.schlechteres(alpha, result);
-					if (bewerter.istBesser(alpha, beta)) {
-						break;
-					}
-				}
-			}
-			knoten.bewertung = result;
-			return result;
-
-		} else {
-			int[] minResult = bewerter.besterWert();
-			int gegnerischePriotitaet = -1; // ??
-			for (Karte karte : knoten.zustand.roboter[1].karten) {
-				Spielzustand neuerZustand = knoten.zustand.karteSpielen(knoten.zustand.roboter[1], karte);
-				Knoten neuerKnoten = new Knoten(neuerZustand);
-				knoten.karte = karte;
-				knoten.zustand.roboter[1].karten.remove(karte);
-				knoten.nachfolger.add(neuerKnoten);
-				int[] newResult = alphabeta(neuerKnoten, tiefe - 1, alpha, beta, 0, karte.prioritaet);
-				if(bewerter.istBesser(newResult, minResult)){ // wenn das neue schlechter ist als das aktuelle ??
-					minResult = newResult;
-					gegnerischePriotitaet = karte.prioritaet;
-				}
-				
-				beta = bewerter.schlechteres(alpha, minResult);
-				if (bewerter.istBesser(alpha, beta)) {
-					break;
-
-				}
-			
-			}
-			int[] maxResult = bewerter.schlechtesterWert();
-			int eigenePriotitaet = -1; 
-			for (Karte karte : knoten.zustand.roboter[0].karten) {
-				Spielzustand neuerZustand = knoten.zustand.karteSpielen(knoten.zustand.roboter[0], karte);
-				Knoten neuerKnoten = new Knoten(neuerZustand);
-				knoten.karte = karte;
-				knoten.zustand.roboter[0].karten.remove(karte);
-				knoten.nachfolger.add(neuerKnoten);
-				int[] newResult = alphabeta(neuerKnoten, tiefe - 1, alpha, beta, 0, karte.prioritaet);
-				if(bewerter.istBesser(maxResult, newResult)){ // wenn das neue besser ist als das aktuelle ??
-					maxResult = newResult;
-					eigenePriotitaet = karte.prioritaet;
-				}
-				alpha = bewerter.besseres(alpha, maxResult);
-				if (bewerter.istBesser(alpha, beta)) {
-					break;
-				}
-			}
-			if(gegnerischePriotitaet > eigenePriotitaet){
-				knoten.bewertung = minResult;
-				return minResult;
-			}
-			knoten.bewertung = maxResult;
-			return maxResult;
-		}
+		return result;
 	}
 
-	Karte[] zuspielendeKarten(){
-		Karte[] karten = new Karte[5];
-		Knoten aktuell = wurzel;
-		int[] bewertung = wurzel.bewertung;
-		for(int i = 0; i < karten.length; i++){
-			for(Knoten knoten : aktuell.nachfolger){
-				if(bewertung == knoten.bewertung){
-					karten[i] = knoten.karte;
-					aktuell = knoten;
-					break;
+	int[] max_value(Knoten knoten, int prioritaet) {
+		int[] result = bewerter.schlechtesterWert();
+
+		for (Karte karte : knoten.zustand.roboter[1].karten) {
+			if (karte.prioritaet < prioritaet) {
+				Knoten kind = knoten.kindMitKarte(1, karte);
+				kind.bewertung = idk_value(kind);
+				if (bewerter.istBesser(kind.bewertung, result)) {
+					knoten.nachfolger = kind;
+					result = kind.bewertung;
 				}
 			}
 		}
+
+		return result;
+	}
+
+	int[] idk_value(Knoten knoten) {
+		/*
+		 * TODO: Abbruchbedingung
+		 */
+
+		int[] result = new int[] {};
+
+		// Unsere Zuege
+		TreeMap<Integer, Knoten> netteKinder = new TreeMap<>();
+		for (Karte karte : knoten.zustand.roboter[0].karten) {
+			Knoten kind = knoten.kindMitKarte(0, karte);
+			kind.bewertung = min_value(kind, karte.prioritaet);
+			netteKinder.put(karte.prioritaet, kind);
+		}
+
+		// Gegnerische Zuege
+		TreeMap<Integer, Knoten> bloedeKinder = new TreeMap<>();
+		for (Karte karte : knoten.zustand.roboter[1].karten) {
+			Knoten kind = knoten.kindMitKarte(1, karte);
+			kind.bewertung = max_value(kind, karte.prioritaet);
+			bloedeKinder.put(karte.prioritaet, kind);
+		}
+
+		// Einfarbige Abschnitte zusammenfassen
+
+		return result;
+	}
+
+	/**
+	 * In einer Liste von netten und blöden Kinder, die neben netten und blöden
+	 * Kindern stehen, gibt das hier eine Liste mit den nettesten und allerblödsten
+	 * Kindern zurück.
+	 */
+	Knoten vertreterWaehlen(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
 		
+		boolean vertrittUns = bewerter.istBesser(netteKinder.lastEntry().getValue().bewertung,
+				bloedeKinder.lastEntry().getValue().bewertung);
 		
-		return karten;
+		ArrayList<Knoten> vertreterListe;
+		if (vertrittUns) {
+			vertreterListe = vertreterWaehlenHelfer(netteKinder, bloedeKinder, vertrittUns);
+		} else {
+			vertreterListe = vertreterWaehlenHelfer(bloedeKinder, netteKinder, !vertrittUns);
+		}
+
+		Knoten result = vertreterListe.remove(0);
+		int[] min = result.bewertung;
+		int[] max = min;
+		while (!vertreterListe.isEmpty()) {
+			vertrittUns = !vertrittUns;
+			Knoten vertreter = vertreterListe.remove(0);
+
+			if (!vertrittUns) {
+				
+			} else {
+				if (bewerter.istBesser(vertreter.bewertung, min)) {
+					break;
+				}
+				min = bewerter.schlechteres(min, vertreter.bewertung);
+			}
+			result = vertreter;
+		}
+		return result;
+		
+	}
+
+	/**
+	 * @param m
+	 *            Aus den letzten Elementen dieser Liste, beschränkt durch das
+	 *            letzte Element aus c, wird das Element ausgewählt, welches die
+	 *            beste/schlechte Wertung hat.
+	 * @param limiter
+	 *            Das letzte Element dieser Liste limitiert die zu betrachtenden
+	 *            Werte aus m.
+	 */
+	ArrayList<Knoten> vertreterWaehlenHelfer(TreeMap<Integer, Knoten> entsender, TreeMap<Integer, Knoten> limiter,
+			boolean vertrittUns) {
+
+		// Priorität zum Trennen bestimmen, bzw. abbrechen
+		Integer prioritaet = Integer.MIN_VALUE;
+		try {
+			prioritaet = limiter.lastKey();
+		} catch (NoSuchElementException e) {
+			if (entsender.isEmpty()) {
+				return new ArrayList<Knoten>();
+			}
+		}
+
+		// Vertreter der Knoten oberhalb der Priorität bestimmen
+		Knoten vertreter = null;
+		SortedMap<Integer, Knoten> kandidaten = entsender.tailMap(prioritaet);
+		while (!kandidaten.isEmpty()) {
+			Knoten kandidat = entsender.pollLastEntry().getValue();
+			if (kandidat == null || (vertrittUns ? bewerter.istBesser(kandidat.bewertung, vertreter.bewertung)
+					: bewerter.istSchlechter(kandidat.bewertung, vertreter.bewertung))) {
+				vertreter = kandidat;
+			}
+		}
+
+		// Rekursive Ergebnisse zusammensetzen
+		ArrayList<Knoten> result = new ArrayList<Knoten>();
+		result.add(vertreter);
+		result.addAll(vertreterWaehlenHelfer(limiter, entsender, !vertrittUns));
+		return result;
+
+	}
+
+	Karte[] zuspielendeKarten() {
+		Karte[] result = new Karte[Parameter.ZUEGE_PRO_RUNDE];
+		Knoten n = this.wurzel;
+		for (int i = 0; i < result.length; i++) {
+			n = n.nachfolger;
+			result[i] = n.karte;
+		}
+		return result;
+	}
+
+	Karte[] entscheiden(Spielzustand zustand) {
+		int[] __ = this.idk_value(this.wurzel);
+		return zuspielendeKarten();
 	}
 }
