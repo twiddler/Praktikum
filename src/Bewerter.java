@@ -1,5 +1,5 @@
 class Bewerter {
-	
+
 	final int anzahlBewertungen = 7;
 
 	int[] bewerten(Spielzustand zustand) {
@@ -27,25 +27,26 @@ class Bewerter {
 		}
 		return false;
 	}
-	
+
 	int[] besseres(int[] a, int[] b) {
 		return istBesser(a, b) ? a : b;
 	}
-	
+
 	int[] schlechteres(int[] a, int[] b) {
 		return istBesser(b, a) ? a : b;
 	}
-	
+
 	int[] schlechtesterWert() {
 		int[] result = new int[anzahlBewertungen];
-		for(int i = 0; i < result.length; i++) {
+		for (int i = 0; i < result.length; i++) {
 			result[i] = Integer.MIN_VALUE;
 		}
 		return result;
 	}
+
 	int[] besterWert() {
 		int[] result = new int[anzahlBewertungen];
-		for(int i = 0; i < result.length; i++) {
+		for (int i = 0; i < result.length; i++) {
 			result[i] = Integer.MAX_VALUE;
 		}
 		return result;

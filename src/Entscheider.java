@@ -5,8 +5,9 @@ class Entscheider {
 	Knoten wurzel;
 	Bewerter bewerter;
 
-	Entscheider(Spielzustand zustand) {
+	Entscheider(Spielzustand zustand, Bewerter bewerter) {
 		this.wurzel = new Knoten(zustand);
+		this.bewerter = bewerter;
 	}
 
 	int[] min_value(Knoten knoten, int tiefe, int prioritaet) {
@@ -98,11 +99,13 @@ class Entscheider {
 			vertreterListe = vertreterWaehlen(bloedeKinder, netteKinder, !vertrittUns);
 		}
 
-		// Die Vertreter sind jetzt von der Priorität aufsteigend sortiert
-		Knoten result = vertreterListe.remove(0);
-		for (int i = 0; i < vertreterListe.size() - 1; ++i) {
+		// Suche jetzt das Kind raus
+		final boolean ungeradeAnzahl = vertreterListe.size() % 2 == 1;
+		vertrittUns = ungeradeAnzahl ? vertrittUns : !vertrittUns;
+		Knoten result = vertreterListe.remove(vertreterListe.size() - 1);
+		for (int i = 0; i < vertreterListe.size(); ++i) {
 
-			Knoten vergleich = vertreterListe.get(i);
+			Knoten vergleich = vertreterListe.remove(vertreterListe.size() - 1);
 			if (i % 2 == 0 ^ vertrittUns ? bewerter.istBesser(vergleich.bewertung, result.bewertung)
 					: bewerter.istSchlechter(vergleich.bewertung, result.bewertung)) {
 				result = vergleich;
@@ -116,11 +119,10 @@ class Entscheider {
 
 	/**
 	 * Wählt aus einer nach aufsteigender Priorität sortierten Liste von netten und
-	 * blöden Kindern die vertretenden Kinder aus, und dreht sie um. Bspw. wird aus
-	 * einer nach aufsteigender Priorität sortierte Liste [nett1, nett2, nett3,
-	 * blöd1, blöd2, nett4] eine nach absteigender Priorität sortierte Liste [nett4,
-	 * blöd1, nett2], wobei die Bewertung blöd1 < blöd2, nett2 > nett1 und nett2 >
-	 * nett3.
+	 * blöden Kindern die vertretenden Kinder aus. Bspw. wird aus einer nach
+	 * aufsteigender Priorität sortierte Liste [nett1, nett2, nett3, blöd1, blöd2,
+	 * nett4] die Liste [nett2, blöd1, nett4], wobei die Bewertung blöd1 < blöd2,
+	 * nett2 > nett1 und nett2 > nett3.
 	 * 
 	 * Die übergebenen Listen werden von dieser Funktion verändert!
 	 * 
@@ -150,16 +152,16 @@ class Entscheider {
 		SortedMap<Integer, Knoten> kandidaten = entsender.tailMap(prioritaet);
 		while (!kandidaten.isEmpty()) {
 			Knoten kandidat = entsender.pollLastEntry().getValue();
-			if (kandidat == null || (vertrittUns ? bewerter.istBesser(kandidat.bewertung, vertreter.bewertung)
-					: bewerter.istSchlechter(kandidat.bewertung, vertreter.bewertung))) {
+			if (vertreter == null || (vertrittUns ? this.bewerter.istBesser(kandidat.bewertung, vertreter.bewertung)
+					: this.bewerter.istSchlechter(kandidat.bewertung, vertreter.bewertung))) {
 				vertreter = kandidat;
 			}
 		}
 
 		// Rekursive Ergebnisse zusammensetzen
 		ArrayList<Knoten> result = new ArrayList<Knoten>();
-		result.addAll(vertreterWaehlen(limiter, entsender, !vertrittUns));
 		result.add(vertreter);
+		result.addAll(vertreterWaehlen(limiter, entsender, !vertrittUns));
 		return result;
 
 	}

@@ -5,8 +5,14 @@ class Knoten {
 	int[] bewertung;
 	Karte karte;
 
-	public Knoten(Spielzustand zustand) {
+	Knoten(Spielzustand zustand) {
 		this.zustand = zustand;
+	}
+
+	Knoten(Spielzustand zustand, int spieler, Karte karte) {
+		this(zustand);
+		this.karte = karte;
+		this.zustand.roboter[spieler].karten.remove(karte);
 	}
 
 	/**
@@ -15,10 +21,7 @@ class Knoten {
 	 */
 	Knoten kindMitKarte(int spieler, Karte karte) {
 		Spielzustand neuerZustand = this.zustand.karteSpielen(this.zustand.roboter[spieler], karte);
-		Knoten result = new Knoten(neuerZustand);
-		result.karte = karte;
-		result.zustand.roboter[spieler].karten.remove(karte);
-		return result;
+		return new Knoten(neuerZustand, spieler, karte);
 	}
 
 }
