@@ -176,6 +176,6 @@ class Entscheider {
 
 	Karte[] entscheiden(Spielzustand zustand) {
 		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE);
-		return zuspielendeKarten();
+		return zuSpielendeKarten();
 	}
 }
