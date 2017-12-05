@@ -9,13 +9,13 @@ class Entscheider {
 		this.wurzel = new Knoten(zustand);
 	}
 
-	int[] min_value(Knoten knoten, int prioritaet) {
+	int[] min_value(Knoten knoten, int tiefe, int prioritaet) {
 		int[] result = bewerter.besterWert();
 
 		for (Karte karte : knoten.zustand.roboter[0].karten) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(0, karte);
-				kind.bewertung = idk_value(kind);
+				kind.bewertung = idk_value(kind, tiefe - 1);
 				if (bewerter.istSchlechter(kind.bewertung, result)) {
 					knoten.nachfolger = kind;
 					result = kind.bewertung;
@@ -26,13 +26,13 @@ class Entscheider {
 		return result;
 	}
 
-	int[] max_value(Knoten knoten, int prioritaet) {
+	int[] max_value(Knoten knoten, int tiefe, int prioritaet) {
 		int[] result = bewerter.schlechtesterWert();
 
 		for (Karte karte : knoten.zustand.roboter[1].karten) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(1, karte);
-				kind.bewertung = idk_value(kind);
+				kind.bewertung = idk_value(kind, tiefe - 1);
 				if (bewerter.istBesser(kind.bewertung, result)) {
 					knoten.nachfolger = kind;
 					result = kind.bewertung;
@@ -43,73 +43,87 @@ class Entscheider {
 		return result;
 	}
 
-	int[] idk_value(Knoten knoten) {
-		/*
-		 * TODO: Abbruchbedingung
-		 */
+	int[] idk_value(Knoten knoten, int tiefe) {
+		if (tiefe == 0) {
+			return bewerter.bewerten(knoten.zustand);
+		}
 
-		int[] result = new int[] {};
+		int[] min_prioritaet = new int[2];
+		for (int i = 0; i < min_prioritaet.length; ++i) {
+			for (Karte karte : knoten.zustand.roboter[i].karten) {
+				if (karte.prioritaet < min_prioritaet[i]) {
+					min_prioritaet[i] = karte.prioritaet;
+				}
+			}
+		}
 
 		// Unsere Zuege
 		TreeMap<Integer, Knoten> netteKinder = new TreeMap<>();
 		for (Karte karte : knoten.zustand.roboter[0].karten) {
-			Knoten kind = knoten.kindMitKarte(0, karte);
-			kind.bewertung = min_value(kind, karte.prioritaet);
-			netteKinder.put(karte.prioritaet, kind);
+			if (karte.prioritaet < min_prioritaet[1]) {
+				Knoten kind = knoten.kindMitKarte(0, karte);
+				kind.bewertung = min_value(kind, tiefe, karte.prioritaet);
+				netteKinder.put(karte.prioritaet, kind);
+			}
 		}
 
 		// Gegnerische Zuege
 		TreeMap<Integer, Knoten> bloedeKinder = new TreeMap<>();
 		for (Karte karte : knoten.zustand.roboter[1].karten) {
-			Knoten kind = knoten.kindMitKarte(1, karte);
-			kind.bewertung = max_value(kind, karte.prioritaet);
-			bloedeKinder.put(karte.prioritaet, kind);
+			if (karte.prioritaet < min_prioritaet[0]) {
+				Knoten kind = knoten.kindMitKarte(1, karte);
+				kind.bewertung = max_value(kind, tiefe, karte.prioritaet);
+				bloedeKinder.put(karte.prioritaet, kind);
+			}
 		}
 
-		// Einfarbige Abschnitte zusammenfassen
-
-		return result;
+		return welchesKind(netteKinder, bloedeKinder).bewertung;
 	}
 
 	/**
-	 * In einer Liste von netten und blöden Kinder, die neben netten und blöden
-	 * Kindern stehen, gibt das hier eine Liste mit den nettesten und allerblödsten
-	 * Kindern zurück.
+	 * Aus zwei Listen von netten und blöden Kindern, jeweils aufsteigend sortiert
+	 * nach Priorität, bestimmt diese Funktion das Kind was sich durchsetzt.
 	 */
-	Knoten vertreterWaehlen(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
-		
+	Knoten welchesKind(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
+
+		// Ist das schnellste Kind nett oder blöd?
 		boolean vertrittUns = bewerter.istBesser(netteKinder.lastEntry().getValue().bewertung,
 				bloedeKinder.lastEntry().getValue().bewertung);
-		
+
+		// Entferne überflüssige Kinder aus den Listen
 		ArrayList<Knoten> vertreterListe;
 		if (vertrittUns) {
-			vertreterListe = vertreterWaehlenHelfer(netteKinder, bloedeKinder, vertrittUns);
+			vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder, vertrittUns);
 		} else {
-			vertreterListe = vertreterWaehlenHelfer(bloedeKinder, netteKinder, !vertrittUns);
+			vertreterListe = vertreterWaehlen(bloedeKinder, netteKinder, !vertrittUns);
 		}
 
+		// Die Vertreter sind jetzt von der Priorität aufsteigend sortiert
 		Knoten result = vertreterListe.remove(0);
-		int[] min = result.bewertung;
-		int[] max = min;
-		while (!vertreterListe.isEmpty()) {
-			vertrittUns = !vertrittUns;
-			Knoten vertreter = vertreterListe.remove(0);
+		for (int i = 0; i < vertreterListe.size() - 1; ++i) {
 
-			if (!vertrittUns) {
-				
-			} else {
-				if (bewerter.istBesser(vertreter.bewertung, min)) {
-					break;
-				}
-				min = bewerter.schlechteres(min, vertreter.bewertung);
+			Knoten vergleich = vertreterListe.get(i);
+			if (i % 2 == 0 ^ vertrittUns ? bewerter.istBesser(vergleich.bewertung, result.bewertung)
+					: bewerter.istSchlechter(vergleich.bewertung, result.bewertung)) {
+				result = vergleich;
 			}
-			result = vertreter;
+
 		}
+
 		return result;
-		
+
 	}
 
 	/**
+	 * Wählt aus einer nach aufsteigender Priorität sortierten Liste von netten und
+	 * blöden Kindern die vertretenden Kinder aus, und dreht sie um. Bspw. wird aus
+	 * einer nach aufsteigender Priorität sortierte Liste [nett1, nett2, nett3,
+	 * blöd1, blöd2, nett4] eine nach absteigender Priorität sortierte Liste [nett4,
+	 * blöd1, nett2], wobei die Bewertung blöd1 < blöd2, nett2 > nett1 und nett2 >
+	 * nett3.
+	 * 
+	 * Die übergebenen Listen werden von dieser Funktion verändert!
+	 * 
 	 * @param m
 	 *            Aus den letzten Elementen dieser Liste, beschränkt durch das
 	 *            letzte Element aus c, wird das Element ausgewählt, welches die
@@ -118,7 +132,7 @@ class Entscheider {
 	 *            Das letzte Element dieser Liste limitiert die zu betrachtenden
 	 *            Werte aus m.
 	 */
-	ArrayList<Knoten> vertreterWaehlenHelfer(TreeMap<Integer, Knoten> entsender, TreeMap<Integer, Knoten> limiter,
+	ArrayList<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> entsender, TreeMap<Integer, Knoten> limiter,
 			boolean vertrittUns) {
 
 		// Priorität zum Trennen bestimmen, bzw. abbrechen
@@ -144,13 +158,13 @@ class Entscheider {
 
 		// Rekursive Ergebnisse zusammensetzen
 		ArrayList<Knoten> result = new ArrayList<Knoten>();
+		result.addAll(vertreterWaehlen(limiter, entsender, !vertrittUns));
 		result.add(vertreter);
-		result.addAll(vertreterWaehlenHelfer(limiter, entsender, !vertrittUns));
 		return result;
 
 	}
 
-	Karte[] zuspielendeKarten() {
+	Karte[] zuSpielendeKarten() {
 		Karte[] result = new Karte[Parameter.ZUEGE_PRO_RUNDE];
 		Knoten n = this.wurzel;
 		for (int i = 0; i < result.length; i++) {
@@ -161,7 +175,7 @@ class Entscheider {
 	}
 
 	Karte[] entscheiden(Spielzustand zustand) {
-		int[] __ = this.idk_value(this.wurzel);
+		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE);
 		return zuspielendeKarten();
 	}
 }
