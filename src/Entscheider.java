@@ -96,7 +96,7 @@ class Entscheider {
 		if (vertrittUns) {
 			vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder, vertrittUns);
 		} else {
-			vertreterListe = vertreterWaehlen(bloedeKinder, netteKinder, !vertrittUns);
+			vertreterListe = vertreterWaehlen(bloedeKinder, netteKinder, vertrittUns);
 		}
 
 		// Suche jetzt das Kind raus

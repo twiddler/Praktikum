@@ -17,14 +17,16 @@ public class Tester {
 		// Bewertung (nur erste Komponente)
 		TreeMap<Integer, Integer> n = new TreeMap<>();
 		n.put(4, -3);
-		n.put(2, 4);
+		n.put(2, 6);
+		n.put(1, -1);
 
 		TreeMap<Integer, Integer> b = new TreeMap<>();
-		b.put(5, 2);
-		b.put(3, 1);
-		b.put(1, 5);
+		b.put(6, 100);
+		b.put(5, 8);
+		b.put(3, 7);
+		b.put(0, 5);
 
-		int bewertung1Soll = 1;
+		int bewertung1Soll = 6;
 
 		// Aus o.g. Testdaten Knoten bauen
 		Entscheider entscheider = new Entscheider(null, new Bewerter());
