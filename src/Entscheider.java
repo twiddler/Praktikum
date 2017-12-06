@@ -5,21 +5,29 @@ class Entscheider {
 	Knoten wurzel;
 	Bewerter bewerter;
 
-	Entscheider(Spielzustand zustand, Bewerter bewerter) {
-		this.wurzel = new Knoten(zustand);
+	Entscheider(Bewerter bewerter) {
 		this.bewerter = bewerter;
 	}
 
-	int[] min_value(Knoten knoten, int tiefe, int prioritaet) {
+	int[] min_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
 		int[] result = bewerter.besterWert();
 
 		for (Karte karte : knoten.zustand.roboter[0].karten) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(0, karte);
-				kind.bewertung = idk_value(kind, tiefe - 1);
+				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
+
 				if (bewerter.istSchlechter(kind.bewertung, result)) {
 					knoten.nachfolger = kind;
 					result = kind.bewertung;
+				}
+
+				if (bewerter.istSchlechter(kind.bewertung, alpha)) {
+					return result;
+				}
+
+				if (bewerter.istSchlechter(kind.bewertung, beta)) {
+					beta = kind.bewertung;
 				}
 			}
 		}
@@ -27,16 +35,25 @@ class Entscheider {
 		return result;
 	}
 
-	int[] max_value(Knoten knoten, int tiefe, int prioritaet) {
+	int[] max_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
 		int[] result = bewerter.schlechtesterWert();
 
 		for (Karte karte : knoten.zustand.roboter[1].karten) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(1, karte);
-				kind.bewertung = idk_value(kind, tiefe - 1);
+				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
+
 				if (bewerter.istBesser(kind.bewertung, result)) {
 					knoten.nachfolger = kind;
 					result = kind.bewertung;
+				}
+
+				if (bewerter.istBesser(kind.bewertung, beta)) {
+					return result;
+				}
+
+				if (bewerter.istBesser(kind.bewertung, alpha)) {
+					alpha = kind.bewertung;
 				}
 			}
 		}
@@ -44,7 +61,7 @@ class Entscheider {
 		return result;
 	}
 
-	int[] idk_value(Knoten knoten, int tiefe) {
+	int[] idk_value(Knoten knoten, int tiefe, int[] alpha, int[] beta) {
 		if (tiefe == 0) {
 			return bewerter.bewerten(knoten.zustand);
 		}
@@ -63,7 +80,7 @@ class Entscheider {
 		for (Karte karte : knoten.zustand.roboter[0].karten) {
 			if (karte.prioritaet < min_prioritaet[1]) {
 				Knoten kind = knoten.kindMitKarte(0, karte);
-				kind.bewertung = min_value(kind, tiefe, karte.prioritaet);
+				kind.bewertung = min_value(kind, tiefe, karte.prioritaet, alpha, beta);
 				netteKinder.put(karte.prioritaet, kind);
 			}
 		}
@@ -73,7 +90,7 @@ class Entscheider {
 		for (Karte karte : knoten.zustand.roboter[1].karten) {
 			if (karte.prioritaet < min_prioritaet[0]) {
 				Knoten kind = knoten.kindMitKarte(1, karte);
-				kind.bewertung = max_value(kind, tiefe, karte.prioritaet);
+				kind.bewertung = max_value(kind, tiefe, karte.prioritaet, alpha, beta);
 				bloedeKinder.put(karte.prioritaet, kind);
 			}
 		}
@@ -166,6 +183,10 @@ class Entscheider {
 
 	}
 
+	/**
+	 * Durchläuft von der Wurzel aus die Nachfolger im Spielbaum und gibt die Karten
+	 * aus, die auf diesem Weg gespielt wurden.
+	 */
 	Karte[] zuSpielendeKarten() {
 		Karte[] result = new Karte[Parameter.ZUEGE_PRO_RUNDE];
 		Knoten n = this.wurzel;
@@ -176,8 +197,22 @@ class Entscheider {
 		return result;
 	}
 
+	/**
+	 * Bestimmt von der Wurzel aus die Nachfolger, also die Spielzustände, die bei
+	 * rationalem Verhalten beider Spieler durchlaufen werden.
+	 */
+	void zuegeAnalysieren() {
+		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE, this.bewerter.schlechtesterWert(),
+				this.bewerter.besterWert());
+	}
+
+	/**
+	 * Gegeben einen Spielzustand, gibt uns diese Funktion die Karten, die wir
+	 * spielen sollen.
+	 */
 	Karte[] entscheiden(Spielzustand zustand) {
-		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE);
+		this.wurzel = new Knoten(zustand);
+		this.zuegeAnalysieren();
 		return zuSpielendeKarten();
 	}
 }

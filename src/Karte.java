@@ -12,7 +12,6 @@ final class Karte implements Cloneable {
 		this.drehung_feld = drehung_feld;
 	}
 
-
 	@Override
 	public Karte clone() {
 		Karte result = null;
@@ -21,8 +20,8 @@ final class Karte implements Cloneable {
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
-	
+
 }

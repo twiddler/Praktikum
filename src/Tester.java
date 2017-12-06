@@ -29,7 +29,7 @@ public class Tester {
 		int bewertung1Soll = 6;
 
 		// Aus o.g. Testdaten Knoten bauen
-		Entscheider entscheider = new Entscheider(null, new Bewerter());
+		Entscheider entscheider = new Entscheider(new Bewerter());
 		TreeMap<Integer, Knoten> netteKinder = new TreeMap<>();
 		while (!n.isEmpty()) {
 			Map.Entry<Integer, Integer> pb = n.pollLastEntry();
