@@ -12,9 +12,9 @@ class Entscheider {
 	int[] min_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
 		int[] result = bewerter.besterWert();
 
-		for (Karte karte : knoten.zustand.roboter[0].karten) {
+		for (Karte karte : knoten.zustand.roboter[1].karten) {
 			if (karte.prioritaet < prioritaet) {
-				Knoten kind = knoten.kindMitKarte(0, karte);
+				Knoten kind = knoten.kindMitKarte(1, karte);
 				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
 
 				if (bewerter.istSchlechter(kind.bewertung, result)) {
@@ -38,9 +38,9 @@ class Entscheider {
 	int[] max_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
 		int[] result = bewerter.schlechtesterWert();
 
-		for (Karte karte : knoten.zustand.roboter[1].karten) {
+		for (Karte karte : knoten.zustand.roboter[0].karten) {
 			if (karte.prioritaet < prioritaet) {
-				Knoten kind = knoten.kindMitKarte(1, karte);
+				Knoten kind = knoten.kindMitKarte(0, karte);
 				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
 
 				if (bewerter.istBesser(kind.bewertung, result)) {
@@ -78,7 +78,7 @@ class Entscheider {
 		// Unsere Zuege
 		TreeMap<Integer, Knoten> netteKinder = new TreeMap<>();
 		for (Karte karte : knoten.zustand.roboter[0].karten) {
-			if (karte.prioritaet < min_prioritaet[1]) {
+			if (karte.prioritaet > min_prioritaet[1]) {
 				Knoten kind = knoten.kindMitKarte(0, karte);
 				kind.bewertung = min_value(kind, tiefe, karte.prioritaet, alpha, beta);
 				netteKinder.put(karte.prioritaet, kind);
@@ -88,14 +88,14 @@ class Entscheider {
 		// Gegnerische Zuege
 		TreeMap<Integer, Knoten> bloedeKinder = new TreeMap<>();
 		for (Karte karte : knoten.zustand.roboter[1].karten) {
-			if (karte.prioritaet < min_prioritaet[0]) {
+			if (karte.prioritaet > min_prioritaet[0]) {
 				Knoten kind = knoten.kindMitKarte(1, karte);
 				kind.bewertung = max_value(kind, tiefe, karte.prioritaet, alpha, beta);
 				bloedeKinder.put(karte.prioritaet, kind);
 			}
 		}
-
-		return welchesKind(netteKinder, bloedeKinder).bewertung;
+		knoten.nachfolger = welchesKind(netteKinder, bloedeKinder);
+		return knoten.nachfolger.bewertung;
 	}
 
 	/**

@@ -18,14 +18,17 @@ final class Roboter extends Bewegbar implements Cloneable {
 	boolean zerstoert = false;
 	ArrayList<Karte> karten;
 	int letzteFlagge;
+	boolean virtuell;
 
-	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld, final int letzteFlagge) {
+	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld,
+			final int letzteFlagge, boolean virtuell) {
 		this.position = position;
 		this.blickrichtung = blickrichtung;
 		this.leben = leben;
 		this.gesundheit = gesundheit;
 		this.geld = geld;
 		this.letzteFlagge = letzteFlagge;
+		this.virtuell = virtuell;
 	}
 
 	@Override
@@ -36,12 +39,12 @@ final class Roboter extends Bewegbar implements Cloneable {
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
 		}
-		
+
 		result.karten = new ArrayList<Karte>();
-		for(int i = 0; i < this.karten.size(); i++) {
+		for (int i = 0; i < this.karten.size(); i++) {
 			result.karten.add(this.karten.get(i).clone());
 		}
-		
+
 		return result;
 	}
 
@@ -51,8 +54,8 @@ final class Roboter extends Bewegbar implements Cloneable {
 
 	/**
 	 * Der Roboter soll schritte-mal nach vorne laufen. Dazu soll er den Feldern
-	 * mitteilen, dass er sie verlässt und betritt. Falls er zwischendurch stirbt,
-	 * soll er nicht mehr laufen.
+	 * mitteilen, dass er sie verlässt und betritt. Falls er zwischendurch
+	 * stirbt, soll er nicht mehr laufen.
 	 */
 	void laufen(final int schritte, final Spielzustand zustand) {
 		for (int i = 0; i < schritte; ++i) {
@@ -68,20 +71,35 @@ final class Roboter extends Bewegbar implements Cloneable {
 	}
 
 	/**
-	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf die
-	 * nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw. auf das
-	 * Startfeld.
+	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf
+	 * die nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw.
+	 * auf das Startfeld.
 	 */
 	void zerstoeren(final Spielzustand zustand) {
 		this.zerstoert = true;
 		--this.leben;
 		this.gesundheit = Parameter.MAX_GESUNDHEIT_NACH_TOD;
 
-		if(this.letzteFlagge == -1) {
+		respawn(zustand);
+	}
+
+	private void respawn(final Spielzustand zustand) {
+		if (this.letzteFlagge == -1) {
 			this.position = 0;
 		} else {
 			this.position = zustand.flaggen[letzteFlagge].position;
 		}
+		
+		for (Roboter roboter : zustand.roboter) {
+			if (roboter.stehtAufPosition(position) && roboter != this) {
+				this.virtuell = true;
+			}
+		}
+	}
+
+	@Override
+	boolean stehtAufPosition(final int position) {
+		return super.stehtAufPosition(position) && leben > 0;
 	}
 
 	/**
