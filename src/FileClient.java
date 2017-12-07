@@ -2,8 +2,11 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.net.Socket;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+//import org.json.simple.JSONArray;
 import org.apache.commons.cli.*;
 
 class FileClient {
@@ -13,46 +16,52 @@ class FileClient {
 	static int SOCKET_PORT;
 	static int GAME_ID;
 
-	final static String FILE_TO_RECEIVE = "c:/temp/source-downloaded.json"; // die
+	final static String FILE_TO_RECEIVE = "C:/Users/serge/Downloads/source-downloaded.json"; // change this
 																			// JSON-File
 																			// die
 																			// wir
 																			// uebergeben
 																			// bekommen
-	final static int FILE_SIZE = 1400; // TCP max 1500kB Nutzdaten, daher
-										// sicherheitshalber auf 1400kB
-										// beschraenken
+	final static int FILE_SIZE = 1400000; // TCP max 1500kB Nutzdaten, daher
+										  // sicherheitshalber auf 1400kB
+										  // beschraenken
 	final static String TEAM_NAME = "xXx Players xXx";
 	final static String PASSWORD = "hallo1234";
 
 	public static void main(String[] args) throws IOException {
 
 		// Kommandozeilenparameter parsen
-		Options options = new Options();
-		Option[] os = { new Option("r", "remote", true, "IPv4 des Spielservers"),
-				new Option("p", "localPort", true, "Port bei uns"),
-				new Option("i", "spielID", true, "ID des Spiels dem beigetreten werden soll") };
-		for (Option o : os) {
-			o.setRequired(true);
-			options.addOption(o);
-		}
+//		Options options = new Options();
+//		Option[] os = { new Option("r", "remote", true, "IPv4 des Spielservers"),
+//				new Option("p", "localPort", true, "Port bei uns"),
+//				new Option("i", "spielID", true, "ID des Spiels dem beigetreten werden soll") };
+//		for (Option o : os) {
+//			o.setRequired(true);
+//			options.addOption(o);
+//		}
+//
+//		CommandLineParser parser = new DefaultParser();
+//		HelpFormatter formatter = new HelpFormatter();
+//		CommandLine cmd;
+//		try {
+//			cmd = parser.parse(options, args);
+//		} catch (ParseException e) {
+//			System.out.println(e.getMessage());
+//			formatter.printHelp("utility-name", options);
+//
+//			System.exit(1);
+//			return;
+//		}
+//		SERVER = cmd.getOptionValue("remote");
+//		SOCKET_PORT =Integer.parseInt(cmd.getOptionValue("localPort").split(" ")[0]);
+//		GAME_ID = Integer.parseInt(cmd.getOptionValue("spielID")); 
 
-		CommandLineParser parser = new DefaultParser();
-		HelpFormatter formatter = new HelpFormatter();
-		CommandLine cmd;
-		try {
-			cmd = parser.parse(options, args);
-		} catch (ParseException e) {
-			System.out.println(e.getMessage());
-			formatter.printHelp("utility-name", options);
-
-			System.exit(1);
-			return;
-		}
-		SERVER = cmd.getOptionValue("remote");
-		SOCKET_PORT = Integer.parseInt(cmd.getOptionValue("localPort").split(" ")[0]);
-		GAME_ID = Integer.parseInt(cmd.getOptionValue("spielID"));
-
+		SERVER = "127.0.0.1";
+		SOCKET_PORT = 13267;
+		GAME_ID = 1337;
+		
+		login();
+		
 		int bytesRead;
 		int current = 0;
 		FileOutputStream fos = null;
@@ -92,8 +101,8 @@ class FileClient {
 				sock.close();
 		}
 	}
-
-	private String loginString() {
+	
+	private static JSONObject login() {
 		JSONObject json = new JSONObject();
 		JSONObject loginJSON = new JSONObject();
 		loginJSON.put("team", TEAM_NAME);
@@ -101,6 +110,24 @@ class FileClient {
 		json.put("login", loginJSON);
 		json.put("spielbeitritt", GAME_ID);
 		json.put("spielerID", 0);
-		return json.toString();
+		
+		try {  
+            // Writing to a file  
+            File file=new File("/Users/serge/Downloads/login.json");// change this  
+            file.createNewFile();  
+            FileWriter fileWriter = new FileWriter(file);  
+            System.out.println("Writing JSON object to file");  
+            System.out.println("-----------------------");  
+            System.out.print(json);  
+
+            fileWriter.write(json.toJSONString());  
+            fileWriter.flush();  
+            fileWriter.close();  
+
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }  
+		
+		return json;
 	}
 }
