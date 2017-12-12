@@ -122,7 +122,7 @@ final class Laser extends Wand {
 
 	@Override
 	void ausfuehren(final Feld feld, final int richtung, final Spielzustand zustand) {
-		feld.durchlasern((richtung + 3) % 6, zustand);
+		feld.durchlasern((richtung + 3) % 6, zustand, true);
 	}
 
 }

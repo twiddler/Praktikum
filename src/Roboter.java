@@ -80,30 +80,32 @@ final class Roboter extends Bewegbar implements Cloneable {
 	 * Startfeld.
 	 */
 	void zerstoeren(final Spielzustand zustand) {
-		this.zerstoert = true;
-		--this.leben;
-		this.gesundheit = Parameter.MAX_GESUNDHEIT_NACH_TOD;
-
-		respawn(zustand);
+		if (!this.zerstoert) {
+			this.zerstoert = true;
+			--this.leben;
+		}
 	}
 
-	private void respawn(final Spielzustand zustand) {
+	void respawn(final Spielzustand zustand) {
+		if (this.leben == 0) {
+			return;
+		}
+
+		this.zerstoert = false;
+		this.gesundheit = Parameter.MAX_GESUNDHEIT_NACH_TOD;
+		this.virtuell = true;
+
+		// An die letzte Flagge bzw. Spielfeldmitte stellen
 		if (this.naechsteFlagge == 0) {
 			this.position = 0;
 		} else {
 			this.position = zustand.flaggen[this.naechsteFlagge].position;
 		}
-
-		for (Roboter roboter : zustand.roboter) {
-			if (roboter.stehtAufPosition(position) && roboter != this) {
-				this.virtuell = true;
-			}
-		}
 	}
 
 	@Override
 	boolean stehtAufPosition(final int position) {
-		return super.stehtAufPosition(position) && leben > 0;
+		return super.stehtAufPosition(position) && !this.zerstoert;
 	}
 
 	/**
@@ -136,7 +138,7 @@ final class Roboter extends Bewegbar implements Cloneable {
 		final Feld nachbar = zustand.feldAufPosition(feld.nachbarn[this.blickrichtung]);
 		if (feld.kanteInRichtung(this.blickrichtung).rauslaserbar()
 				&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
-			nachbar.durchlasern(this.blickrichtung, zustand);
+			nachbar.durchlasern(this.blickrichtung, zustand, false);
 		}
 	}
 

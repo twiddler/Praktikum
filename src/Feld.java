@@ -88,10 +88,12 @@ class Feld implements Cloneable {
 	}
 
 	/**
-	 * Versucht die entsprechende Kante zu überschreiten. Falls erfolgreich,
-	 * wird der Roboter auf das Feld hier gesetzt, und die Fähigkeit beim
-	 * Betreten des Feldes ausgeführt. Bspw. soll ein Loch den betretenden
-	 * Roboter umbringen.
+	 * Versucht die entsprechende Kante zu überschreiten. Falls erfolgreich, wird
+	 * der Roboter auf das Feld hier gesetzt, und die Fähigkeit beim Betreten des
+	 * Feldes ausgeführt. Bspw. soll ein Loch den betretenden Roboter umbringen.
+	 * 
+	 * Steht auf diesem Feld ein Roboter, wird versucht ihn vom Feld zu schieben.
+	 * Wenn das nicht geht, bleibt der eintretende Roboter auf seinem alten Feld.
 	 */
 	void betreten(final Bewegbar b, final Spielzustand zustand) {
 
@@ -110,12 +112,19 @@ class Feld implements Cloneable {
 
 		if (this.kanteInRichtung(richtung).eintreten(b, zustand)) {
 			boolean betritt = true;
+
+			// Nicht virtuelle Roboter können schieben
 			if (b instanceof Roboter && !((Roboter) b).virtuell) {
 				for (Roboter roboter : zustand.roboter) {
-					if (roboter.stehtAufPosition(position) && !roboter.virtuell) {
+
+					// Nicht virtuelle Roboter können geschoben werden
+					if (roboter.stehtAufPosition(this.position) && !roboter.virtuell) {
 						betritt = false;
 						int gegenrichtung = (richtung + 3) % 6;
 						Feld nachbar = zustand.feldAufPosition(this.nachbarn[gegenrichtung]);
+
+						// Über eine Schlucht können wir immer schieben, danach müssen es beide Kanten
+						// zulassen
 						if (this.kanteInRichtung(gegenrichtung) instanceof Schlucht
 								|| (this.kanteInRichtung(gegenrichtung).rauslaserbar()
 										&& nachbar.kanteInRichtung(richtung).reinlaserbar())) {
@@ -142,23 +151,30 @@ class Feld implements Cloneable {
 	}
 
 	/**
-	 * Lässt Roboter auf dem aktuellen Feld vom Laser getroffen werden bzw.
-	 * schickt den Laser ins nächste Feld falls keine Kante in dieser Richtung
-	 * ihn aufhält.
+	 * Lässt Roboter auf dem aktuellen Feld vom Laser getroffen werden bzw. schickt
+	 * den Laser ins nächste Feld falls keine Kante in dieser Richtung ihn aufhält.
 	 */
-	final void durchlasern(final int richtung, final Spielzustand zustand) {
+	final void durchlasern(final int richtung, final Spielzustand zustand, final boolean trifftVirtuelleRoboter) {
+
+		// Wenn ein oder mehrere Roboter getroffen werden, nehmen diese Schaden und der
+		// Laser wird gestoppt
+		boolean roboterGetroffen = false;
 		for (final Roboter r : zustand.roboter) {
-			if (r.stehtAufPosition(this.position) && !r.virtuell) {
+			if (r.stehtAufPosition(this.position) && (!r.virtuell || trifftVirtuelleRoboter)) {
 				r.gesundheitVerringern(zustand);
-				return;
+				roboterGetroffen = true;
 			}
+		}
+		if (roboterGetroffen) {
+			return;
 		}
 
 		final Feld nachbar = zustand.feldAufPosition(this.nachbarn[richtung]);
 		if (this.kanteInRichtung(richtung).rauslaserbar()
 				&& nachbar.kanteInRichtung((richtung + 3) % 6).reinlaserbar()) {
-			nachbar.durchlasern(richtung, zustand);
+			nachbar.durchlasern(richtung, zustand, trifftVirtuelleRoboter);
 		}
+
 	}
 
 }

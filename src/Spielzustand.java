@@ -137,6 +137,20 @@ final class Spielzustand implements Cloneable {
 			}
 		}
 	}
+	
+	void respawns() {
+		for (Roboter r : this.roboter) {
+			if (r.zerstoert) {
+				r.respawn(this);
+			}
+		}
+
+		if (!this.roboter[0].stehtAufPosition(this.roboter[1].position)) {
+			for (Roboter r : this.roboter) {
+				r.virtuell = false;
+			}
+		}
+	}
 
 	Spielzustand zugBeenden() {
 		Spielzustand result = this.clone();
@@ -144,6 +158,7 @@ final class Spielzustand implements Cloneable {
 		result.feldaktionenAusfuehren();
 		result.roboterlaserFeuern();
 		result.flaggenBeruehren();
+		result.respawns();
 		++result.zug;
 
 		return result;
