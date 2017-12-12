@@ -31,9 +31,9 @@ final class Spielzustand implements Cloneable {
 	/**
 	 * Indizes der Felder, in Reihenfolge der Ausfï¿½hrung: Aixpresslaufbï¿½nder,
 	 * Aixpresslaufbï¿½nder, Laufbï¿½nder, Drehscheiben, Reparaturfelder.
-	 * (Aixpresslaufbï¿½nder sind bei uns normale Laufbï¿½nder.) Da sich die Positionen
-	 * nicht ï¿½ndern, ist dieses Feld Eigenschaft der Klasse, und muss nur einmal
-	 * befï¿½llt werden.
+	 * (Aixpresslaufbï¿½nder sind bei uns normale Laufbï¿½nder.) Da sich die
+	 * Positionen nicht ï¿½ndern, ist dieses Feld Eigenschaft der Klasse, und muss
+	 * nur einmal befï¿½llt werden.
 	 */
 	static int[][] positionenMitSonderfeld;
 
@@ -82,12 +82,13 @@ final class Spielzustand implements Cloneable {
 	}
 
 	/**
-	 * Gibt den Spielzustand zurï¿½ck, der beim Spielen einer Karte erreicht wird.
+	 * Gibt den Spielzustand zurück, der beim Spielen einer Karte erreicht wird.
 	 * Hier ist noch unklar, wie die Karte einem Roboter zugeordnet wird.
 	 */
-	Spielzustand karteSpielen(final Roboter roboter, final Karte karte) {
+	Spielzustand karteSpielen(final int besitzer, final Karte karte) {
 		final Spielzustand result = this.clone();
 
+		Roboter roboter = result.roboter[besitzer];
 		roboter.drehen(karte.drehung_roboter);
 		roboter.laufen(karte.schritte, result);
 		result.feldAufPosition(roboter.position).drehen(karte.drehung_feld, result.roboter);

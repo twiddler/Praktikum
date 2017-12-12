@@ -188,11 +188,13 @@ class Entscheider {
 	 * aus, die auf diesem Weg gespielt wurden.
 	 */
 	Karte[] zuSpielendeKarten() {
-		Karte[] result = new Karte[Parameter.ZUEGE_PRO_RUNDE];
+		Karte[] result = new Karte[2 * Parameter.ZUEGE_PRO_RUNDE];
 		Knoten n = this.wurzel;
 		for (int i = 0; i < result.length; i++) {
 			n = n.nachfolger;
-			result[i] = n.karte;
+			if (n.spieler == 0) {
+				result[i] = n.karte;
+			}
 		}
 		return result;
 	}

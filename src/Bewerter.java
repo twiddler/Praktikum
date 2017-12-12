@@ -6,9 +6,9 @@ class Bewerter {
 		Roboter wir = zustand.roboter[0];
 		Roboter gegner = zustand.roboter[1];
 
-		return new int[] { wir.letzteFlagge == Parameter.ANZAHL_FLAGGEN ? 1 : 0,
-				gegner.letzteFlagge != Parameter.ANZAHL_FLAGGEN ? 1 : 0, wir.leben > 0 || wir.gesundheit > 0 ? 1 : 0,
-				gegner.leben == 0 && gegner.gesundheit == 0 ? 1 : 0, wir.letzteFlagge, gegner.letzteFlagge,
+		return new int[] { wir.naechsteFlagge == Parameter.ANZAHL_FLAGGEN ? 1 : 0,
+				gegner.naechsteFlagge < Parameter.ANZAHL_FLAGGEN ? 1 : 0, wir.leben > 0 || wir.gesundheit > 0 ? 1 : 0,
+				gegner.leben == 0 && gegner.gesundheit == 0 ? 1 : 0, wir.naechsteFlagge, gegner.naechsteFlagge,
 				wir.leben > 0 ? 1 : 0 };
 	}
 

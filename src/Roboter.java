@@ -17,18 +17,22 @@ final class Roboter extends Bewegbar implements Cloneable {
 	int geld;
 	boolean zerstoert = false;
 	ArrayList<Karte> karten;
-	int letzteFlagge;
+	/**
+	 * Die nächste zu berührende Flagge. Die erste Flagge hat die Nummer 0.
+	 */
+	int naechsteFlagge;
 	boolean virtuell;
 
 	Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld,
-			final int letzteFlagge, boolean virtuell) {
+			final int naechsteFlagge, boolean virtuell, ArrayList<Karte> karten) {
 		this.position = position;
 		this.blickrichtung = blickrichtung;
 		this.leben = leben;
 		this.gesundheit = gesundheit;
 		this.geld = geld;
-		this.letzteFlagge = letzteFlagge;
+		this.naechsteFlagge = naechsteFlagge;
 		this.virtuell = virtuell;
+		this.karten = karten;
 	}
 
 	@Override
@@ -54,8 +58,8 @@ final class Roboter extends Bewegbar implements Cloneable {
 
 	/**
 	 * Der Roboter soll schritte-mal nach vorne laufen. Dazu soll er den Feldern
-	 * mitteilen, dass er sie verlässt und betritt. Falls er zwischendurch
-	 * stirbt, soll er nicht mehr laufen.
+	 * mitteilen, dass er sie verlässt und betritt. Falls er zwischendurch stirbt,
+	 * soll er nicht mehr laufen.
 	 */
 	void laufen(final int schritte, final Spielzustand zustand) {
 		for (int i = 0; i < schritte; ++i) {
@@ -71,9 +75,9 @@ final class Roboter extends Bewegbar implements Cloneable {
 	}
 
 	/**
-	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf
-	 * die nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw.
-	 * auf das Startfeld.
+	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf die
+	 * nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw. auf das
+	 * Startfeld.
 	 */
 	void zerstoeren(final Spielzustand zustand) {
 		this.zerstoert = true;
@@ -84,12 +88,12 @@ final class Roboter extends Bewegbar implements Cloneable {
 	}
 
 	private void respawn(final Spielzustand zustand) {
-		if (this.letzteFlagge == -1) {
+		if (this.naechsteFlagge == 0) {
 			this.position = 0;
 		} else {
-			this.position = zustand.flaggen[letzteFlagge].position;
+			this.position = zustand.flaggen[this.naechsteFlagge].position;
 		}
-		
+
 		for (Roboter roboter : zustand.roboter) {
 			if (roboter.stehtAufPosition(position) && roboter != this) {
 				this.virtuell = true;

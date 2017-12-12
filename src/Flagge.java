@@ -25,9 +25,9 @@ final class Flagge extends Bewegbar implements Cloneable {
 	}
 
 	void beruehren(final Roboter roboter, final Spielzustand zustand) {
-		if (roboter.stehtAufPosition(this.position) && this.nummer == roboter.letzteFlagge + 1) {
+		if (roboter.stehtAufPosition(this.position) && this.nummer == roboter.naechsteFlagge) {
 			if (this.nummer < Parameter.ANZAHL_FLAGGEN - 1 || zustand.istLetzterZug()) {
-				roboter.letzteFlagge = this.nummer;
+				++roboter.naechsteFlagge;
 			}
 		}
 	}
