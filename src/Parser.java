@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
-	
+
+	static final int spielerID = 0;
+
 	public Spielzustand parseSpielzustand(JSONObject jsonSpielzustand) throws JSONException {
 		JSONArray Felder = jsonSpielzustand.getJSONArray("spielbrett");
 		Feld[] retFelder = new Feld[Felder.length()];
@@ -13,17 +15,25 @@ public class Parser {
 		List<List<Integer>> posFeldzusatz = new ArrayList<>(2);
 		List<Integer> posLaser = new ArrayList<Integer>();
 		int[][] nachbarListe = nachbarListe();
-		
+
+		Flagge[] flaggen = new Flagge[4];
+
 		Kante wand = new Wand();
 		Kante schlucht = new Schlucht();
 		Kante einbahn_rein = new Einbahn_rein();
 		Kante einbahn_raus = new Einbahn_raus();
 		Kante laser = new Laser();
 		Kante normal = new Kante();
-		
+
 		for (int i = 0; i < Felder.length(); i++) {
 			JSONObject pFeld = Felder.getJSONObject(i);
-			JSONArray pKanten = pFeld.getJSONArray("kanten");
+
+			JSONObject pTyp = pFeld.getJSONObject("typ");
+			JSONObject zusaetze = pFeld.getJSONObject("zusaetze");
+
+			JSONObject zusaetzeMitte = zusaetze.getJSONObject("mitte");
+			JSONArray pKanten = zusaetze.getJSONArray("kanten");
+
 			Kante[] kanten = new Kante[6];
 			for (int j = 0; j < pKanten.length(); j++) {
 				String kante = (String) pKanten.get(i);
@@ -51,14 +61,23 @@ public class Parser {
 			}
 
 			Zusatz zusatz;
-			String zusatzName = pFeld.getString("zusatztyp");
+			String zusatzName = zusaetzeMitte.getString("zusatztyp");
 			switch (zusatzName) {
 			case "zahltag":
 				zusatz = new Zahltag(100);
 				posFeldzusatz.get(1).add(i);
 				break;
 			case "presse":
-				zusatz = new Presse(null);//??
+				JSONArray aktivIn = zusaetzeMitte.getJSONArray("aktiv");
+				boolean[] aktiv = new boolean[5];
+				for (int j = 0; j < aktiv.length; j++) {
+					if (aktivIn.toString().contains(Integer.toString(j))) {
+						aktiv[j] = true;
+					} else {
+						aktiv[j] = false;
+					}
+				}
+				zusatz = new Presse(aktiv);
 				posFeldzusatz.get(2).add(i);
 				break;
 			default:
@@ -66,26 +85,31 @@ public class Parser {
 				break;
 			}
 
-			String typ = pFeld.getString("feldtyp");
+			int flaggenNr = zusaetzeMitte.getInt("flagge");
+			if (flaggenNr != 0) {
+				flaggen[flaggenNr - 1] = new Flagge(i, flaggenNr - 1);
+			}
+
+			String typ = pTyp.getString("feldtyp");
 			switch (typ) {
 			case "dreh":
-				retFelder[i] = new Drehfeld(nachbarListe[i], kanten, zusatz, 0, i, pFeld.getInt("richtung")); 
+				retFelder[i] = new Drehfeld(nachbarListe[i], kanten, zusatz, 0, i, pTyp.getInt("richtung"));
 				posSonderfeld.get(4).add(i);
 				break;
 			case "loch":
 				retFelder[i] = new Loch(nachbarListe[i], kanten, zusatz, 0, i);
 				break;
 			case "laufband":
-				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, 0, i, pFeld.getInt("richtung"));
+				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, 0, i, pTyp.getInt("richtung"));
 				posSonderfeld.get(3).add(i);
 				break;
 			case "aixpress":
-				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, 0, i, pFeld.getInt("richtung"));
+				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, 0, i, pTyp.getInt("richtung"));
 				posSonderfeld.get(1).add(i);
 				posSonderfeld.get(2).add(i);
 				break;
 			case "reparatur":
-				retFelder[i] = new Reparaturfeld(nachbarListe[i], kanten, zusatz, 0, i, 1); //Gesundheit??
+				retFelder[i] = new Reparaturfeld(nachbarListe[i], kanten, zusatz, 0, i, 1); // Gesundheit??
 				posSonderfeld.get(5).add(i);
 				break;
 			default:
@@ -93,18 +117,45 @@ public class Parser {
 				break;
 			}
 		}
+
 		int[][] retSonderfeld = befuelleArray2(posSonderfeld);
 		int[][] retFeldzusatz = befuelleArray2(posFeldzusatz);
 		int[] retLaser = befuelleArray(posLaser);
-		Spielzustand ret = new Spielzustand(null, retFelder, 0, null);
+
+		// int geld = jsonSpielzustand.getInt("startgeld");
+		JSONArray spieler = jsonSpielzustand.getJSONArray("spieler");
+		JSONArray roboter = jsonSpielzustand.getJSONArray("roboter");
+
+		Roboter[] roboterArray = new Roboter[2];
+
+		for (int i = 0; i < 2; i++) {
+			JSONObject robo = roboter.getJSONObject(i);
+			JSONObject pos = robo.getJSONObject("position");
+			JSONObject sp = roboter.getJSONObject(i);
+			JSONArray spKarten = sp.getJSONArray("karten");
+			ArrayList<Karte> karten = new ArrayList<Karte>();
+			for (int j = 0; j < spKarten.length(); j++) {
+				JSONObject pKarte = spKarten.getJSONObject(j);
+				karten.add(new Karte(pKarte.getInt("prioritaet"), pKarte.getInt("rotation"), pKarte.getInt("schritte"),
+						pKarte.getInt("felddrehung")));
+			}
+			Roboter roboterFertig = new Roboter(pos.getInt("feldindex"), pos.getInt("richtung"), sp.getInt("leben"),
+					robo.getInt("gesundheit"), 0, sp.getInt("nextFlag") - 1, robo.getBoolean("virtuell"), karten); // geld
+																													// fehlt
+			if (spieler.getJSONObject(0).getInt("id") == spielerID) {
+				roboterArray[0] = roboterFertig;
+			} else {
+				roboterArray[1] = roboterFertig;
+			}
+		}
+
+		Spielzustand ret = new Spielzustand(roboterArray, retFelder, 0, flaggen);
 		Spielzustand.positionenMitSonderfeld = retSonderfeld;
 		Spielzustand.positionenMitFeldzusatz = retFeldzusatz;
 		Spielzustand.positionenMitLasern = retLaser;
 		return ret;
 	}
-	
-	
-	
+
 	static void setzeNachbarn(int index1, int index2, int rotation, int[][] felderNachbarn) {
 		felderNachbarn[index1][rotation] = index2;
 		felderNachbarn[index2][(rotation + 3) % 6] = index1;
@@ -173,23 +224,23 @@ public class Parser {
 		}
 		return ret[s];
 	}
-	
-	int[] befuelleArray(List<Integer> input){
+
+	int[] befuelleArray(List<Integer> input) {
 		int ret[] = new int[input.size()];
-		for(int i = 0; i < input.size(); i++){
+		for (int i = 0; i < input.size(); i++) {
 			ret[i] = input.get(i);
 		}
 		return ret;
 	}
-	
-	int[][] befuelleArray2(List<List<Integer>> input){
+
+	int[][] befuelleArray2(List<List<Integer>> input) {
 		int ret[][] = new int[input.size()][];
-		for(int i = 0; i < input.size(); i++){
+		for (int i = 0; i < input.size(); i++) {
 			ret[i] = new int[input.get(i).size()];
-			for(int j = 0; j < input.get(i).size(); j++){
+			for (int j = 0; j < input.get(i).size(); j++) {
 				ret[i][j] = input.get(i).get(j);
 			}
 		}
 		return ret;
 	}
- }
+}
