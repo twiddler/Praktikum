@@ -83,7 +83,6 @@ final class Spielzustand implements Cloneable {
 
 	/**
 	 * Gibt den Spielzustand zurück, der beim Spielen einer Karte erreicht wird.
-	 * Hier ist noch unklar, wie die Karte einem Roboter zugeordnet wird.
 	 */
 	Spielzustand karteSpielen(final int besitzer, final Karte karte) {
 		final Spielzustand result = this.clone();
@@ -92,6 +91,7 @@ final class Spielzustand implements Cloneable {
 		roboter.drehen(karte.drehung_roboter);
 		roboter.laufen(karte.schritte, result);
 		result.feldAufPosition(roboter.position).drehen(karte.drehung_feld, result.roboter);
+		roboter.karten.remove(karte);
 
 		return result;
 	}

@@ -4,6 +4,10 @@ class Knoten {
 	Knoten nachfolger;
 	int[] bewertung;
 	Karte karte;
+	/**
+	 * Der Spieler, der diesen Knoten herbeigeführt, also als letztes eine Karte
+	 * gespielt hat.
+	 */
 	int spieler;
 
 	Knoten(Spielzustand zustand) {
@@ -14,7 +18,6 @@ class Knoten {
 		this(zustand);
 		this.karte = karte;
 		this.spieler = spieler;
-		this.zustand.roboter[spieler].karten.remove(karte);
 	}
 
 	/**
@@ -22,8 +25,7 @@ class Knoten {
 	 * karte spielt.
 	 */
 	Knoten kindMitKarte(int spieler, Karte karte) {
-		Spielzustand neuerZustand = this.zustand.karteSpielen(spieler, karte);
-		return new Knoten(neuerZustand, spieler, karte);
+		return new Knoten(this.zustand.karteSpielen(spieler, karte), spieler, karte);
 	}
 
 }

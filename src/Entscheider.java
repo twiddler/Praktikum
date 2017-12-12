@@ -104,30 +104,15 @@ class Entscheider {
 	 */
 	Knoten welchesKind(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
 
-		// Ist das schnellste Kind nett oder blöd?
-		boolean vertrittUns = bewerter.istBesser(netteKinder.lastEntry().getValue().bewertung,
-				bloedeKinder.lastEntry().getValue().bewertung);
+		ArrayList<Knoten> vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder);
 
-		// Entferne überflüssige Kinder aus den Listen
-		ArrayList<Knoten> vertreterListe;
-		if (vertrittUns) {
-			vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder, vertrittUns);
-		} else {
-			vertreterListe = vertreterWaehlen(bloedeKinder, netteKinder, vertrittUns);
-		}
-
-		// Suche jetzt das Kind raus
-		final boolean ungeradeAnzahl = vertreterListe.size() % 2 == 1;
-		vertrittUns = ungeradeAnzahl ? vertrittUns : !vertrittUns;
 		Knoten result = vertreterListe.remove(vertreterListe.size() - 1);
-		for (int i = 0; i < vertreterListe.size(); ++i) {
-
+		while (!vertreterListe.isEmpty()) {
 			Knoten vergleich = vertreterListe.remove(vertreterListe.size() - 1);
-			if (i % 2 == 0 ^ vertrittUns ? bewerter.istBesser(vergleich.bewertung, result.bewertung)
+			if (vergleich.spieler == 0 ? bewerter.istBesser(vergleich.bewertung, result.bewertung)
 					: bewerter.istSchlechter(vergleich.bewertung, result.bewertung)) {
 				result = vergleich;
 			}
-
 		}
 
 		return result;
@@ -135,21 +120,41 @@ class Entscheider {
 	}
 
 	/**
-	 * Wählt aus einer nach aufsteigender Priorität sortierten Liste von netten und
-	 * blöden Kindern die vertretenden Kinder aus. Bspw. wird aus einer nach
-	 * aufsteigender Priorität sortierte Liste [nett1, nett2, nett3, blöd1, blöd2,
-	 * nett4] die Liste [nett2, blöd1, nett4], wobei die Bewertung blöd1 < blöd2,
-	 * nett2 > nett1 und nett2 > nett3.
+	 * Wählt aus zwei nach aufsteigender Priorität sortierten Listen von netten und
+	 * blöden Kindern die vertretenden Kinder aus. Ist bspw. die nach aufsteigender
+	 * Priorität sortierte, vereinigte Liste [nett1, nett2, nett3, blöd1, blöd2,
+	 * nett4] mit den Bewertungen nett2 > nett1, nett2 > nett3, blöd1 < blöd2, dann
+	 * ist das Ergebnis dieser Funktion [nett2, blöd1, nett4].
 	 * 
 	 * Die übergebenen Listen werden von dieser Funktion verändert!
+	 */
+	ArrayList<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
+
+		// Ist das schnellste Kind nett oder blöd?
+		boolean vertrittUns = netteKinder.lastEntry().getKey() > bloedeKinder.lastEntry().getKey();
+
+		if (vertrittUns) {
+			return vertreterWaehlen(netteKinder, bloedeKinder, vertrittUns);
+		} else {
+			return vertreterWaehlen(bloedeKinder, netteKinder, vertrittUns);
+		}
+
+	}
+
+	/**
+	 * Sucht anhand des Elements mit höchster Priorität in limiter den bis dahin
+	 * zusammenhängenden Bereich in entsender. Je nachdem welche der beiden Listen
+	 * die netten oder blöden Kinder sind, wird eine andere Bewertungsfunktion
+	 * benutzt. Die Funktion ruft sich dann mit getauschten Parametern selbst auf,
+	 * bis die Liste leer ist.
 	 * 
-	 * @param m
+	 * @param entsender
 	 *            Aus den letzten Elementen dieser Liste, beschränkt durch das
-	 *            letzte Element aus c, wird das Element ausgewählt, welches die
-	 *            beste/schlechte Wertung hat.
+	 *            letzte Element aus limiter, wird das Element ausgewählt, welches
+	 *            die beste/schlechte Wertung hat.
 	 * @param limiter
 	 *            Das letzte Element dieser Liste limitiert die zu betrachtenden
-	 *            Werte aus m.
+	 *            Werte aus entsender.
 	 */
 	ArrayList<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> entsender, TreeMap<Integer, Knoten> limiter,
 			boolean vertrittUns) {
