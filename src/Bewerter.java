@@ -1,15 +1,27 @@
 class Bewerter {
 
-	final int anzahlBewertungen = 7;
+	/**
+	 * Länge der Bewertungstupel. Nötig für die Generierung des schlechtesten und
+	 * besten Wertes.
+	 **/
+	final int anzahlBewertungen = 8;
 
 	int[] bewerten(Spielzustand zustand) {
 		Roboter wir = zustand.roboter[0];
 		Roboter gegner = zustand.roboter[1];
 
-		return new int[] { wir.naechsteFlagge == Parameter.ANZAHL_FLAGGEN ? 1 : 0,
-				gegner.naechsteFlagge < Parameter.ANZAHL_FLAGGEN ? 1 : 0, wir.leben > 0 || wir.gesundheit > 0 ? 1 : 0,
-				gegner.leben == 0 && gegner.gesundheit == 0 ? 1 : 0, wir.naechsteFlagge, gegner.naechsteFlagge,
-				wir.leben > 0 ? 1 : 0 };
+		boolean wirGewinnen = wir.naechsteFlagge == Parameter.ANZAHL_FLAGGEN;
+		boolean gegnerGewinntNicht = gegner.naechsteFlagge < Parameter.ANZAHL_FLAGGEN;
+		boolean wirLebenNoch = wir.leben > 0;
+		boolean gegnerLebtNichtMehr = gegner.leben == 0;
+		int unsereNaechsteFlagge = wir.naechsteFlagge;
+		int seineNaechsteFlagge = -gegner.naechsteFlagge;
+		int unserAbstandZurNaechstenFlagge = -zustand.abstandZurNaechstenFlagge(0);
+		int gegnerAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(1);
+
+		return new int[] { wirGewinnen ? 1 : 0, gegnerGewinntNicht ? 1 : 0, wirLebenNoch ? 1 : 0,
+				gegnerLebtNichtMehr ? 1 : 0, unsereNaechsteFlagge, seineNaechsteFlagge, unserAbstandZurNaechstenFlagge,
+				gegnerAbstandZurNaechstenFlagge };
 	}
 
 	boolean istBesser(int[] a, int[] b) {
@@ -36,18 +48,18 @@ class Bewerter {
 		return istBesser(b, a) ? a : b;
 	}
 
-	int[] schlechtesterWert() {
-		int[] result = new int[anzahlBewertungen];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = Integer.MIN_VALUE;
-		}
-		return result;
-	}
-
 	int[] besterWert() {
 		int[] result = new int[anzahlBewertungen];
 		for (int i = 0; i < result.length; i++) {
 			result[i] = Integer.MAX_VALUE;
+		}
+		return result;
+	}
+
+	int[] schlechtesterWert() {
+		int[] result = new int[anzahlBewertungen];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = Integer.MIN_VALUE;
 		}
 		return result;
 	}

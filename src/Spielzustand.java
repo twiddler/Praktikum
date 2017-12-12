@@ -137,7 +137,7 @@ final class Spielzustand implements Cloneable {
 			}
 		}
 	}
-	
+
 	void respawns() {
 		for (Roboter r : this.roboter) {
 			if (r.zerstoert) {
@@ -173,5 +173,34 @@ final class Spielzustand implements Cloneable {
 
 	boolean istLetzterZug() {
 		return this.zug == Parameter.ZUEGE_PRO_RUNDE - 1;
+	}
+
+	/**
+	 * Berechnet den Abstand vom übergebenen Roboter zu seiner nächsten Flagge.
+	 * Ignoriert Hindernisse.
+	 */
+	int abstandZurNaechstenFlagge(final int besitzer) {
+		Roboter roboter = this.roboter[besitzer];
+		Flagge flagge = this.flaggen[roboter.naechsteFlagge];
+		Feld feld = this.feldAufPosition(roboter.position);
+
+		for (int ring = 1; ring < Parameter.ANZAHL_SPIELFELDRINGE; ++ring) {
+			// Auf den nächsten Ring gehen
+			feld = this.feldAufPosition(feld.nachbarn[0]);
+
+			// Erstmal nach rechts gehen
+			int richtung = 2;
+			for (int drehen = 0; drehen < 6; ++drehen) {
+				for (int laufen = 0; laufen < ring; ++laufen) {
+					if (flagge.stehtAufPosition(feld.position)) {
+						return ring;
+					}
+					feld = this.feldAufPosition(feld.nachbarn[richtung]);
+				}
+				++richtung;
+			}
+		}
+
+		return Integer.MAX_VALUE;
 	}
 }
