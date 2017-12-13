@@ -87,7 +87,7 @@ public class Parser {
 			switch (zusatzName) {
 			case "zahltag":
 				zusatz = new Zahltag(100);
-				posFeldzusatz.get(1).add(i);
+				posFeldzusatz.get(0).add(i);
 				break;
 			case "presse":
 				JSONArray aktivIn = zusaetzeMitte.getJSONArray("aktiv");
@@ -100,7 +100,7 @@ public class Parser {
 					}
 				}
 				zusatz = new Presse(aktiv);
-				posFeldzusatz.get(2).add(i);
+				posFeldzusatz.get(1).add(i);
 				break;
 			default:
 				zusatz = null;
@@ -116,23 +116,23 @@ public class Parser {
 			switch (typ) {
 			case "dreh":
 				retFelder[i] = new Drehfeld(nachbarListe[i], kanten, zusatz, 0, i, pTyp.getInt("richtung"));
-				posSonderfeld.get(4).add(i);
+				posSonderfeld.get(3).add(i);
 				break;
 			case "loch":
 				retFelder[i] = new Loch(nachbarListe[i], kanten, zusatz, 0, i);
 				break;
 			case "laufband":
 				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, 0, i, pTyp.getInt("richtung"));
-				posSonderfeld.get(3).add(i);
+				posSonderfeld.get(2).add(i);
 				break;
 			case "aixpress":
 				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, 0, i, pTyp.getInt("richtung"));
+				posSonderfeld.get(0).add(i);
 				posSonderfeld.get(1).add(i);
-				posSonderfeld.get(2).add(i);
 				break;
 			case "reparatur":
 				retFelder[i] = new Reparaturfeld(nachbarListe[i], kanten, zusatz, 0, i, 1); // Gesundheit??
-				posSonderfeld.get(5).add(i);
+				posSonderfeld.get(4).add(i);
 				break;
 			default:
 				retFelder[i] = new Feld(nachbarListe[i], kanten, zusatz, 0, i);
