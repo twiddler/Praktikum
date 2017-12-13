@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"entscheidungen"},{"l":"netzwerk"},{"l":"spiellogik"}]
