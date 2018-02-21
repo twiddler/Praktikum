@@ -5,26 +5,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
 
 import org.json.JSONObject;
 
-class FileClient {
+import entscheidungen.Bewerter;
+import entscheidungen.Entscheider;
+
+class Client {
 
 	// Per Kommandozeile übergebene Parameter
 	static String SERVER;
 	static int SOCKET_PORT;
 	static int GAME_ID;
+	static int SPIELER_ID;
 
-	final static String FILE_TO_RECEIVE = "C:/Users/serge/Downloads/source-downloaded.json"; // change
-																								// this
-	// JSON-File
-	// die
-	// wir
-	// uebergeben
-	// bekommen
-	final static int FILE_SIZE = 1400000; // TCP max 1500kB Nutzdaten, daher
-											// sicherheitshalber auf 1400kB
-											// beschraenken
 	final static String TEAM_NAME = "xXx Players xXx";
 	final static String PASSWORD = "123";
 
@@ -70,18 +65,41 @@ class FileClient {
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-			System.out.println("Connecting...");
+			out.println(login().toString() + "\n\n");
 
-			JSONObject login = login();
-			String login2 = login.toString();
-			login2 = login2 + "\n\n";
-			System.out.println(login2);
-			out.println(login2);
-			System.out.println("echo: " + in.readLine());
-			System.out.println("Connecting...");
+			String answer = in.readLine();
+			System.out.println(answer);
+			answer = answer.replaceAll("[^0-9]+", " ");
+			String[] IDs = answer.trim().split(" ");
+			System.out.println(Arrays.asList(answer.trim().split(" ")));
+			System.out.println("echo: " + answer);
+			
+			GAME_ID = Integer.parseInt(IDs[0]);
+			SPIELER_ID = Integer.parseInt(IDs[1]);
+			
+			Entscheider entscheider = new Entscheider(new Bewerter());
+			
+			
+			// -> Login
+			// <- Login ok
+			// <- Spielzustand
+			
+			for (int phase = 0; phase <= 3; phase = (phase + 1) % 3) {
+				
+				// -> Gebote schicken
+				// <- wer wie geboten hat
+				
+				// -> Programm
+				
+				// <- Programme, Brett, Roboter [, Sieger]
+				
+				// -> Powerdown? (nein, obv)
+				// <- Powerdowns, Handkarten, Bietbares
+				
+			}
+			
 
 		} finally {
-
 		}
 
 	}
@@ -95,5 +113,17 @@ class FileClient {
 		json.put("spielbeitritt", GAME_ID);
 		json.put("spielerID", 0);
 		return json;
+	}
+
+	private static JSONObject newJSONPackage(JSONObject daten) {
+
+		JSONObject result = new JSONObject();
+		result.put("spielID", GAME_ID);
+		result.put("spielerID", SPIELER_ID);
+		result.put("daten", daten);
+		result.put("message", "");
+
+		return result;
+
 	}
 }

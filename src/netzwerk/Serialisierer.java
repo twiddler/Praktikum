@@ -1,9 +1,11 @@
 package netzwerk;
 
-public class nettyClient {
+public class Serialisierer {
 
-	public nettyClient() {
+	public Serialisierer() {
 		// TODO Auto-generated constructor stub
 	}
+	
+	
 
 }
