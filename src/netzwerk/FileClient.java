@@ -1,14 +1,12 @@
 package netzwerk;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 
 class FileClient {
 
@@ -17,7 +15,8 @@ class FileClient {
 	static int SOCKET_PORT;
 	static int GAME_ID;
 
-	final static String FILE_TO_RECEIVE = "C:/Users/serge/Downloads/source-downloaded.json"; // change this
+	final static String FILE_TO_RECEIVE = "C:/Users/serge/Downloads/source-downloaded.json"; // change
+																								// this
 	// JSON-File
 	// die
 	// wir
@@ -27,15 +26,17 @@ class FileClient {
 											// sicherheitshalber auf 1400kB
 											// beschraenken
 	final static String TEAM_NAME = "xXx Players xXx";
-	final static String PASSWORD = "hallo1234";
+	final static String PASSWORD = "123";
 
 	public static void main(String[] args) throws IOException {
 
 		// Kommandozeilenparameter parsen
 		// Options options = new Options();
-		// Option[] os = { new Option("r", "remote", true, "IPv4 des Spielservers"),
+		// Option[] os = { new Option("r", "remote", true, "IPv4 des
+		// Spielservers"),
 		// new Option("p", "localPort", true, "Port bei uns"),
-		// new Option("i", "spielID", true, "ID des Spiels dem beigetreten werden soll")
+		// new Option("i", "spielID", true, "ID des Spiels dem beigetreten
+		// werden soll")
 		// };
 		// for (Option o : os) {
 		// o.setRequired(true);
@@ -55,53 +56,34 @@ class FileClient {
 		// return;
 		// }
 		// SERVER = cmd.getOptionValue("remote");
-		// SOCKET_PORT =Integer.parseInt(cmd.getOptionValue("localPort").split(" ")[0]);
+		// SOCKET_PORT =Integer.parseInt(cmd.getOptionValue("localPort").split("
+		// ")[0]);
 		// GAME_ID = Integer.parseInt(cmd.getOptionValue("spielID"));
 
 		SERVER = "127.0.0.1";
-		SOCKET_PORT = 13267;
-		GAME_ID = 1337;
+		SOCKET_PORT = 9911;
+		GAME_ID = 12;
 
-		login();
-
-		int bytesRead;
-		int current = 0;
-		FileOutputStream fos = null;
-		BufferedOutputStream bos = null;
-		Socket sock = null;
 		try {
-			sock = new Socket(SERVER, SOCKET_PORT);
+			@SuppressWarnings("resource")
+			Socket socket = new Socket(SERVER, SOCKET_PORT);
+			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
 			System.out.println("Connecting...");
 
-			// receive file
-			byte[] mybytearray = new byte[FILE_SIZE];
-			InputStream is = sock.getInputStream();
-			fos = new FileOutputStream(FILE_TO_RECEIVE);
-			bos = new BufferedOutputStream(fos);
-			bytesRead = is.read(mybytearray, 0, mybytearray.length);
-			current = bytesRead;
+			JSONObject login = login();
+			String login2 = login.toString();
+			login2 = login2 + "\n\n";
+			System.out.println(login2);
+			out.println(login2);
+			System.out.println("echo: " + in.readLine());
+			System.out.println("Connecting...");
 
-			do {
-				bytesRead = // gibt die gesamte Anzahl an Bytes zurueck, die wir
-							// empfangen haben
-						is.read(mybytearray, current, (mybytearray.length - current));
-				if (bytesRead >= 0)
-					current += bytesRead;
-			} while (bytesRead > -1); // -1 wird zurueckgegeben, wenn wir am
-										// Ende des Streams angekommen sind
+		} finally {
 
-			bos.write(mybytearray, 0, current);
-			bos.flush();
-			System.out.println("File " + FILE_TO_RECEIVE + " downloaded (" + current + " bytes read)");
-		} finally { // Streams und Socket schlieﬂen, selbst wenn eine Exception
-					// geworfen wurde
-			if (fos != null)
-				fos.close();
-			if (bos != null)
-				bos.close();
-			if (sock != null)
-				sock.close();
 		}
+
 	}
 
 	private static JSONObject login() {
@@ -112,24 +94,6 @@ class FileClient {
 		json.put("login", loginJSON);
 		json.put("spielbeitritt", GAME_ID);
 		json.put("spielerID", 0);
-
-		try {
-			// Writing to a file
-			File file = new File("/Users/serge/Downloads/login.json");// change this
-			file.createNewFile();
-			FileWriter fileWriter = new FileWriter(file);
-			System.out.println("Writing JSON object to file");
-			System.out.println("-----------------------");
-			System.out.print(json);
-
-			fileWriter.write(json.toJSONString());
-			fileWriter.flush();
-			fileWriter.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		return json;
 	}
 }
