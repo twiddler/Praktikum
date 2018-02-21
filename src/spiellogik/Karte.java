@@ -7,6 +7,8 @@ public final class Karte implements Cloneable {
 	int schritte;
 	int drehung_feld;
 
+	public static Karte dummy = new Karte(Integer.MIN_VALUE, 0, 0, 0);
+
 	public Karte(final int prioritaet, final int drehung_roboter, final int schritte, final int drehung_feld) {
 		this.prioritaet = prioritaet;
 		this.drehung_roboter = drehung_roboter;

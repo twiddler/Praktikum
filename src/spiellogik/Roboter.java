@@ -10,6 +10,7 @@ import java.util.ArrayList;
  */
 public final class Roboter extends Bewegbar implements Cloneable {
 
+	
 	/**
 	 * Feld, auf dem der Roboter steht, referenziert durch dessen Position.
 	 */
@@ -20,6 +21,7 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	boolean zerstoert = false;
 	public ArrayList<Karte> karten;
 	public ArrayList<Karte> gesperrteKarten;
+	boolean poweredDown = false;
 
 	/**
 	 * Die nächste zu berührende Flagge. Die erste Flagge hat die Nummer 0.
@@ -160,9 +162,12 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	public ArrayList<Karte> spielbareKarten(int slot) {
 		ArrayList<Karte> result;
 		int geblockteKarten = this.gesperrteKarten.size();
-		if (Parameter.ZUEGE_PRO_RUNDE - slot > geblockteKarten) {
+		if (this.poweredDown) {
+			result = new ArrayList<Karte>();
+			result.add(Karte.dummy);
+		} else if (Parameter.ZUEGE_PRO_RUNDE - slot > geblockteKarten){
 			result = this.karten;
-		} else {
+		}else {
 			result = new ArrayList<Karte>();
 			result.add(this.gesperrteKarten.get(slot - geblockteKarten - 1));
 		}

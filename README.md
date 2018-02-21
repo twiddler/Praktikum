@@ -12,4 +12,3 @@ Die Dokumentation erfolgt mit javadoc, siehe /doc.
 - Gesperrte Karten parsen
 - Bieten
 - Serialisierer
-- Powerdown
