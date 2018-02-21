@@ -10,6 +10,7 @@ import java.util.ArrayList;
  */
 public final class Roboter extends Bewegbar implements Cloneable {
 
+	
 	/**
 	 * Feld, auf dem der Roboter steht, referenziert durch dessen Position.
 	 */
@@ -19,6 +20,9 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	int geld;
 	boolean zerstoert = false;
 	public ArrayList<Karte> karten;
+	public ArrayList<Karte> gesperrteKarten;
+	boolean poweredDown = false;
+
 	/**
 	 * Die nächste zu berührende Flagge. Die erste Flagge hat die Nummer 0.
 	 */
@@ -26,7 +30,7 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	boolean virtuell;
 
 	public Roboter(final int position, final int blickrichtung, final int leben, final int gesundheit, final int geld,
-			final int naechsteFlagge, boolean virtuell, ArrayList<Karte> karten) {
+			final int naechsteFlagge, boolean virtuell, ArrayList<Karte> karten, ArrayList<Karte> gesperrteKarten) {
 		this.position = position;
 		this.blickrichtung = blickrichtung;
 		this.leben = leben;
@@ -35,6 +39,7 @@ public final class Roboter extends Bewegbar implements Cloneable {
 		this.naechsteFlagge = naechsteFlagge;
 		this.virtuell = virtuell;
 		this.karten = karten;
+		this.gesperrteKarten = gesperrteKarten;
 	}
 
 	@Override
@@ -49,6 +54,11 @@ public final class Roboter extends Bewegbar implements Cloneable {
 		result.karten = new ArrayList<Karte>();
 		for (int i = 0; i < this.karten.size(); i++) {
 			result.karten.add(this.karten.get(i).clone());
+		}
+
+		result.gesperrteKarten = new ArrayList<Karte>();
+		for (int i = 0; i < this.gesperrteKarten.size(); i++) {
+			result.gesperrteKarten.add(this.gesperrteKarten.get(i).clone());
 		}
 
 		return result;
@@ -142,6 +152,26 @@ public final class Roboter extends Bewegbar implements Cloneable {
 				&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
 			nachbar.durchlasern(this.blickrichtung, zustand, false);
 		}
+	}
+
+	/**
+	 * Ermittelt welche Karten im Programmslot gespielt werden können. Bei vollem
+	 * Leben sind das alles, ansonsten müssen die gesperrten Karten betrachtet
+	 * werden.
+	 */
+	public ArrayList<Karte> spielbareKarten(int slot) {
+		ArrayList<Karte> result;
+		int geblockteKarten = this.gesperrteKarten.size();
+		if (this.poweredDown) {
+			result = new ArrayList<Karte>();
+			result.add(Karte.dummy);
+		} else if (Parameter.ZUEGE_PRO_RUNDE - slot > geblockteKarten){
+			result = this.karten;
+		}else {
+			result = new ArrayList<Karte>();
+			result.add(this.gesperrteKarten.get(slot - geblockteKarten - 1));
+		}
+		return result;
 	}
 
 }

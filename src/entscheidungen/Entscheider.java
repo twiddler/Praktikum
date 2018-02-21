@@ -21,7 +21,7 @@ class Entscheider {
 	int[] min_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
 		int[] result = bewerter.besterWert();
 
-		for (Karte karte : knoten.zustand.roboter[1].karten) {
+		for (Karte karte : knoten.zustand.roboter[1].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(1, karte);
 				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
@@ -47,7 +47,7 @@ class Entscheider {
 	int[] max_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
 		int[] result = bewerter.schlechtesterWert();
 
-		for (Karte karte : knoten.zustand.roboter[0].karten) {
+		for (Karte karte : knoten.zustand.roboter[0].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(0, karte);
 				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
@@ -77,33 +77,28 @@ class Entscheider {
 
 		int[] min_prioritaet = new int[2];
 		for (int i = 0; i < min_prioritaet.length; ++i) {
-			for (Karte karte : knoten.zustand.roboter[i].karten) {
+			for (Karte karte : knoten.zustand.roboter[i].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 				if (karte.prioritaet < min_prioritaet[i]) {
 					min_prioritaet[i] = karte.prioritaet;
 				}
 			}
 		}
 
-		// Unsere Zuege
-		TreeMap<Integer, Knoten> netteKinder = new TreeMap<>();
-		for (Karte karte : knoten.zustand.roboter[0].karten) {
-			if (karte.prioritaet > min_prioritaet[1]) {
-				Knoten kind = knoten.kindMitKarte(0, karte);
-				kind.bewertung = min_value(kind, tiefe, karte.prioritaet, alpha, beta);
-				netteKinder.put(karte.prioritaet, kind);
+		// Für beide Roboter mögliche Züge berechnen
+		ArrayList<TreeMap<Integer, Knoten>> kinder = new ArrayList<>();
+		for (int i = 0; i < 2; ++i) {
+			TreeMap<Integer, Knoten> k = new TreeMap<>();
+			for (Karte karte : knoten.zustand.roboter[i].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
+				if (karte.prioritaet > min_prioritaet[(i + 1) % 2]) {
+					Knoten kind = knoten.kindMitKarte(i, karte);
+					kind.bewertung = i == 0 ? min_value(kind, tiefe, karte.prioritaet, alpha, beta)
+							: max_value(kind, tiefe, karte.prioritaet, alpha, beta);
+					k.put(karte.prioritaet, kind);
+				}
 			}
 		}
 
-		// Gegnerische Zuege
-		TreeMap<Integer, Knoten> bloedeKinder = new TreeMap<>();
-		for (Karte karte : knoten.zustand.roboter[1].karten) {
-			if (karte.prioritaet > min_prioritaet[0]) {
-				Knoten kind = knoten.kindMitKarte(1, karte);
-				kind.bewertung = max_value(kind, tiefe, karte.prioritaet, alpha, beta);
-				bloedeKinder.put(karte.prioritaet, kind);
-			}
-		}
-		knoten.nachfolger = welchesKind(netteKinder, bloedeKinder);
+		knoten.nachfolger = welchesKind(kinder.get(0), kinder.get(1));
 		return knoten.nachfolger.bewertung;
 	}
 
