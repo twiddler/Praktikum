@@ -9,7 +9,7 @@ Die Dokumentation erfolgt mit javadoc, siehe /doc.
   - Bietphase
   - ...
 - TCP-Modul
-- Gesperrte Karten
+- Gesperrte Karten parsen
 - Bieten
 - Serialisierer
 - Powerdown

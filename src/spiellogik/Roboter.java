@@ -19,8 +19,8 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	int geld;
 	boolean zerstoert = false;
 	public ArrayList<Karte> karten;
-	ArrayList<Karte> gesperrteKarten;
-	
+	public ArrayList<Karte> gesperrteKarten;
+
 	/**
 	 * Die nächste zu berührende Flagge. Die erste Flagge hat die Nummer 0.
 	 */
@@ -53,7 +53,7 @@ public final class Roboter extends Bewegbar implements Cloneable {
 		for (int i = 0; i < this.karten.size(); i++) {
 			result.karten.add(this.karten.get(i).clone());
 		}
-		
+
 		result.gesperrteKarten = new ArrayList<Karte>();
 		for (int i = 0; i < this.gesperrteKarten.size(); i++) {
 			result.gesperrteKarten.add(this.gesperrteKarten.get(i).clone());
@@ -150,6 +150,23 @@ public final class Roboter extends Bewegbar implements Cloneable {
 				&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
 			nachbar.durchlasern(this.blickrichtung, zustand, false);
 		}
+	}
+
+	/**
+	 * Ermittelt welche Karten im Programmslot gespielt werden können. Bei vollem
+	 * Leben sind das alles, ansonsten müssen die gesperrten Karten betrachtet
+	 * werden.
+	 */
+	public ArrayList<Karte> spielbareKarten(int slot) {
+		ArrayList<Karte> result;
+		int geblockteKarten = this.gesperrteKarten.size();
+		if (Parameter.ZUEGE_PRO_RUNDE - slot > geblockteKarten) {
+			result = this.karten;
+		} else {
+			result = new ArrayList<Karte>();
+			result.add(this.gesperrteKarten.get(slot - geblockteKarten - 1));
+		}
+		return result;
 	}
 
 }
