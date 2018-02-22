@@ -30,8 +30,10 @@ import spiellogik.Zusatz;
 public class Parser {
 
 	static final int spielerID = 0;
+
 	/**
-	 * Das Kartendeck als Kartenobjekte. Wird einmal abgespeichert und danach zum Nachschlagen für gesperrte Slots benutzt.
+	 * Das Kartendeck als Kartenobjekte. Wird einmal abgespeichert und danach
+	 * zum Nachschlagen für gesperrte Slots benutzt.
 	 */
 	static ArrayList<Karte> deck;
 
@@ -51,6 +53,11 @@ public class Parser {
 
 	}
 
+	/**
+	 * Parst die Daten zu den Robotern. Diese überladene Funktion ist für die
+	 * erste Runde, in der es noch keine gesperrten Karten und nur das Startgeld
+	 * gibt.
+	 */
 	static Roboter[] roboterParsen(int startgeld, JSONArray spielerJSON, JSONArray roboterJSON, int unsereID) {
 		Roboter[] result = new Roboter[2];
 
@@ -77,6 +84,11 @@ public class Parser {
 		return result;
 	}
 
+	/**
+	 * Parst die Daten zu den Robotern. Diese überladene Funktion ist für alle
+	 * Runden bis auf die erste, weil hier gesperrte Karten und Kontostände
+	 * berechnet werden müssen.
+	 */
 	static Roboter[] roboterParsen(int startgeld, JSONArray spielerJSON, JSONArray roboterJSON, int unsereID,
 			JSONArray programmeJSON) {
 		Roboter[] result = roboterParsen(startgeld, spielerJSON, roboterJSON, unsereID, programmeJSON);
@@ -149,8 +161,7 @@ public class Parser {
 			}
 
 			Zusatz zusatz = null;
-			String zusatzName = zusaetzeMitte.getString("zusatztyp");
-			switch (zusatzName) {
+			switch (zusaetzeMitte.getString("zusatztyp")) {
 			case "zahltag":
 				zusatz = new Zahltag(100); // TODO: Wieviel wird ausgezahlt?
 				posFeldzusatz.get(0).add(i);
@@ -170,8 +181,7 @@ public class Parser {
 				break;
 			}
 
-			String typ = pTyp.getString("feldtyp");
-			switch (typ) {
+			switch (pTyp.getString("feldtyp")) {
 			case "dreh":
 				result[i] = new Drehfeld(nachbarListe[i], kanten, zusatz, i, pTyp.getInt("richtung"));
 				posSonderfeld.get(3).add(i);

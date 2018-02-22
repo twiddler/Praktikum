@@ -76,22 +76,18 @@ class Client {
 			// Einloggen
 			System.out.println("Einloggen ...");
 			out.println(login().toString() + "\n\n");
-			JSONObject antwort = new JSONObject(in.readLine());
-			spielID = antwort.getInt("spielID");
-			spielerID = antwort.getInt("spielerID");
+			JSONObject spiel = new JSONObject(in.readLine());
+			spielID = spiel.getInt("spielID");
+			spielerID = spiel.getInt("spielerID");
 			System.out.println("Eingeloggt in Spiel " + spielID + " als Spieler " + spielerID);
 
 			// Auf alle Spieler warten, dann ersten Spielzustand erhalten
-			String ersteRunde;
-			do {
-				ersteRunde = in.readLine();
-			} while (ersteRunde.isEmpty());
-
 			Entscheider entscheider = new Entscheider(new Bewerter());
-			Spielzustand zustand = Parser.ersteRunde(new JSONObject(ersteRunde), spielerID);
+			Spielzustand zustand = Parser.ersteRunde(naechsteNachricht(in), spielerID);
 
-			while (true) {
-
+			for (int phase = 0; phase < 3; ++phase) {
+				
+								
 				// -> Gebote schicken
 				// <- wer wie geboten hat
 
@@ -99,14 +95,8 @@ class Client {
 				JSONObject programm = Serialisierer.programm(entscheider.entscheiden(zustand));
 				out.println(datenVerpacken(programm));
 
-				
-				// <- gespielte Runde
 				// <- programme, spielbrett, spieler, roboter, sieger
-				String nteRunde;
-				do {
-					nteRunde = in.readLine();
-				} while (nteRunde.isEmpty());
-				zustand = Parser.nteRunde(new JSONObject(nteRunde), spielerID);
+				zustand = Parser.nteRunde(naechsteNachricht(in), spielerID);
 
 				// -> Powerdown? (nein, obv)
 				// <- Powerdowns, Handkarten, Bietbares
@@ -118,6 +108,14 @@ class Client {
 
 	}
 
+	static JSONObject naechsteNachricht(BufferedReader in) throws IOException {
+		String nachricht;
+		do {
+			nachricht = in.readLine();
+		} while (nachricht.isEmpty());
+		return new JSONObject(nachricht);
+	}
+	
 	private static JSONObject login() {
 		JSONObject json = new JSONObject();
 		JSONObject loginJSON = new JSONObject();
@@ -129,7 +127,7 @@ class Client {
 		return json;
 	}
 
-	private static JSONObject datenVerpacken(JSONObject daten) {
+	private static String datenVerpacken(JSONObject daten) {
 
 		JSONObject result = new JSONObject();
 		result.put("spielID", spielID);
@@ -137,7 +135,8 @@ class Client {
 		result.put("daten", daten);
 		result.put("message", "");
 
-		return result;
+		return result.toString()+"\n\n";
 
 	}
+	
 }
