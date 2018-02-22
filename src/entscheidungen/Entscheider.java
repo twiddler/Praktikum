@@ -7,14 +7,15 @@ import java.util.TreeMap;
 
 import spiellogik.Karte;
 import spiellogik.Parameter;
+import spiellogik.Roboter;
 import spiellogik.Spielzustand;
 
-class Entscheider {
+public class Entscheider {
 
 	Knoten wurzel;
 	Bewerter bewerter;
 
-	Entscheider(Bewerter bewerter) {
+	public Entscheider(Bewerter bewerter) {
 		this.bewerter = bewerter;
 	}
 
@@ -103,8 +104,9 @@ class Entscheider {
 	}
 
 	/**
-	 * Aus zwei Listen von netten und blöden Kindern, jeweils aufsteigend sortiert
-	 * nach Priorität, bestimmt diese Funktion das Kind was sich durchsetzt.
+	 * Aus zwei Listen von netten und blöden Kindern, jeweils aufsteigend
+	 * sortiert nach Priorität, bestimmt diese Funktion das Kind was sich
+	 * durchsetzt.
 	 */
 	Knoten welchesKind(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
 
@@ -124,11 +126,12 @@ class Entscheider {
 	}
 
 	/**
-	 * Wählt aus zwei nach aufsteigender Priorität sortierten Listen von netten und
-	 * blöden Kindern die vertretenden Kinder aus. Ist bspw. die nach aufsteigender
-	 * Priorität sortierte, vereinigte Liste [nett1, nett2, nett3, blöd1, blöd2,
-	 * nett4] mit den Bewertungen nett2 > nett1, nett2 > nett3, blöd1 < blöd2, dann
-	 * ist das Ergebnis dieser Funktion [nett2, blöd1, nett4].
+	 * Wählt aus zwei nach aufsteigender Priorität sortierten Listen von netten
+	 * und blöden Kindern die vertretenden Kinder aus. Ist bspw. die nach
+	 * aufsteigender Priorität sortierte, vereinigte Liste [nett1, nett2, nett3,
+	 * blöd1, blöd2, nett4] mit den Bewertungen nett2 > nett1, nett2 > nett3,
+	 * blöd1 < blöd2, dann ist das Ergebnis dieser Funktion [nett2, blöd1,
+	 * nett4].
 	 * 
 	 * Die übergebenen Listen werden von dieser Funktion verändert!
 	 */
@@ -147,15 +150,15 @@ class Entscheider {
 
 	/**
 	 * Sucht anhand des Elements mit höchster Priorität in limiter den bis dahin
-	 * zusammenhängenden Bereich in entsender. Je nachdem welche der beiden Listen
-	 * die netten oder blöden Kinder sind, wird eine andere Bewertungsfunktion
-	 * benutzt. Die Funktion ruft sich dann mit getauschten Parametern selbst auf,
-	 * bis die Liste leer ist.
+	 * zusammenhängenden Bereich in entsender. Je nachdem welche der beiden
+	 * Listen die netten oder blöden Kinder sind, wird eine andere
+	 * Bewertungsfunktion benutzt. Die Funktion ruft sich dann mit getauschten
+	 * Parametern selbst auf, bis die Liste leer ist.
 	 * 
 	 * @param entsender
 	 *            Aus den letzten Elementen dieser Liste, beschränkt durch das
-	 *            letzte Element aus limiter, wird das Element ausgewählt, welches
-	 *            die beste/schlechte Wertung hat.
+	 *            letzte Element aus limiter, wird das Element ausgewählt,
+	 *            welches die beste/schlechte Wertung hat.
 	 * @param limiter
 	 *            Das letzte Element dieser Liste limitiert die zu betrachtenden
 	 *            Werte aus entsender.
@@ -193,24 +196,32 @@ class Entscheider {
 	}
 
 	/**
-	 * Durchläuft von der Wurzel aus die Nachfolger im Spielbaum und gibt die Karten
-	 * aus, die auf diesem Weg gespielt wurden.
+	 * Durchläuft von der Wurzel aus die Nachfolger im Spielbaum und gibt die
+	 * Karten aus, die auf diesem Weg gespielt wurden. Gesperrte Karten kommen
+	 * nicht ins Ergebnis.
 	 */
 	Karte[] zuSpielendeKarten() {
-		Karte[] result = new Karte[2 * Parameter.ZUEGE_PRO_RUNDE];
+
 		Knoten n = this.wurzel;
-		for (int i = 0; i < result.length; i++) {
-			n = n.nachfolger;
-			if (n.spieler == 0) {
-				result[i] = n.karte;
+		Roboter roboter = n.zustand.roboter[0];
+		int freieSlots = Parameter.ZUEGE_PRO_RUNDE - (roboter.gesperrteKarten.size());
+
+		Karte[] result = new Karte[freieSlots];
+		for (int i = 0; i < result.length; ++i) {
+			for (int j = 0; j < 2; ++j) {
+				n = n.nachfolger;
+				if (n.spieler == 0) {
+					result[i] = n.karte;
+				}
 			}
 		}
+
 		return result;
 	}
 
 	/**
-	 * Bestimmt von der Wurzel aus die Nachfolger, also die Spielzustände, die bei
-	 * rationalem Verhalten beider Spieler durchlaufen werden.
+	 * Bestimmt von der Wurzel aus die Nachfolger, also die Spielzustände, die
+	 * bei rationalem Verhalten beider Spieler durchlaufen werden.
 	 */
 	void zuegeAnalysieren() {
 		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE, this.bewerter.schlechtesterWert(),
@@ -221,7 +232,7 @@ class Entscheider {
 	 * Gegeben einen Spielzustand, gibt uns diese Funktion die Karten, die wir
 	 * spielen sollen.
 	 */
-	Karte[] entscheiden(Spielzustand zustand) {
+	public Karte[] entscheiden(Spielzustand zustand) {
 		this.wurzel = new Knoten(zustand);
 		this.zuegeAnalysieren();
 		return zuSpielendeKarten();

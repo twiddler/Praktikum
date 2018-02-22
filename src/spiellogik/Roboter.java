@@ -16,7 +16,7 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	 */
 	int blickrichtung;
 	public int leben;
-	int gesundheit;
+	public int gesundheit;
 	int geld;
 	boolean zerstoert = false;
 	public ArrayList<Karte> karten;

@@ -4,7 +4,7 @@ import spiellogik.Parameter;
 import spiellogik.Roboter;
 import spiellogik.Spielzustand;
 
-class Bewerter {
+public class Bewerter {
 
 	/**
 	 * Länge der Bewertungstupel. Nötig für die Generierung des schlechtesten und

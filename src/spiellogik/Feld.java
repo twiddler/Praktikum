@@ -20,18 +20,17 @@ public class Feld implements Cloneable {
 	final Kante[] kanten;
 
 	final Zusatz zusatz;
-	private int drehung;
+	private int drehung = 0;
 
 	/**
 	 * Index dieses Feldes
 	 */
 	final int position;
 
-	public Feld(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position) {
+	public Feld(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int position) {
 		this.nachbarn = nachbarn;
 		this.kanten = kanten;
 		this.zusatz = zusatz;
-		this.drehung = drehung;
 		this.position = position;
 	}
 

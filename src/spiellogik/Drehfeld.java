@@ -4,9 +4,9 @@ public final class Drehfeld extends Feld {
 
 	private int drehungUm;
 
-	public Drehfeld(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position,
+	public Drehfeld(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int position,
 			final int drehungUm) {
-		super(nachbarn, kanten, zusatz, drehung, position);
+		super(nachbarn, kanten, zusatz, position);
 		this.drehungUm = drehungUm;
 	}
 

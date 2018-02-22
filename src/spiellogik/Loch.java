@@ -2,8 +2,8 @@ package spiellogik;
 
 public final class Loch extends Feld {
 
-	public Loch(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position) {
-		super(nachbarn, kanten, zusatz, drehung, position);
+	public Loch(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int position) {
+		super(nachbarn, kanten, zusatz, position);
 	}
 
 	@Override

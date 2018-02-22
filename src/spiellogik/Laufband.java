@@ -4,9 +4,9 @@ public final class Laufband extends Feld {
 
 	private int richtung;
 
-	public Laufband(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int drehung, final int position,
+	public Laufband(final int[] nachbarn, final Kante[] kanten, final Zusatz zusatz, final int position,
 			final int richtung) {
-		super(nachbarn, kanten, zusatz, drehung, position);
+		super(nachbarn, kanten, zusatz, position);
 		this.richtung = richtung;
 	}
 
