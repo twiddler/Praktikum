@@ -1,5 +1,8 @@
 package spiellogik;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Speichert den Zustand, in dem sich das Spiel befindet. Dazu z�hlen die
  * Verbindungen der Felder, Zust�nde der Roboter, usw..
@@ -30,11 +33,11 @@ public class Spielzustand implements Cloneable {
 	int zug;
 
 	/**
-	 * Indizes der Felder, in Reihenfolge der Ausf�hrung: Aixpresslaufb�nder,
-	 * Aixpresslaufb�nder, Laufb�nder, Drehscheiben, Reparaturfelder.
-	 * (Aixpresslaufb�nder sind bei uns normale Laufb�nder.) Da sich die
-	 * Positionen nicht �ndern, ist dieses Feld Eigenschaft der Klasse, und muss
-	 * nur einmal bef�llt werden.
+	 * Indizes der Felder, in Reihenfolge der Ausf�hrung:
+	 * Aixpresslaufb�nder, Aixpresslaufb�nder, Laufb�nder, Drehscheiben,
+	 * Reparaturfelder. (Aixpresslaufb�nder sind bei uns normale
+	 * Laufb�nder.) Da sich die Positionen nicht �ndern, ist dieses Feld
+	 * Eigenschaft der Klasse, und muss nur einmal bef�llt werden.
 	 */
 	public static int[][] positionenMitSonderfeld;
 
@@ -64,7 +67,7 @@ public class Spielzustand implements Cloneable {
 			e.printStackTrace();
 		}
 
-		result.roboter = new Roboter[2];
+		result.roboter = new Roboter[this.roboter.length];
 		for (int i = 0; i < roboter.length; ++i) {
 			result.roboter[i] = this.roboter[i].clone();
 		}
@@ -91,15 +94,17 @@ public class Spielzustand implements Cloneable {
 		Roboter roboter = result.roboter[besitzer];
 		roboter.drehen(karte.drehung_roboter);
 		roboter.laufen(karte.schritte, result);
-		result.feldAufPosition(roboter.position).drehen(karte.drehung_feld, result.roboter);
+		if (!roboter.zerstoert) {
+			result.feldAufPosition(roboter.position).drehen(karte.drehung_feld, result.roboter);
+		}
 		roboter.karten.remove(karte);
 
 		return result;
 	}
 
 	/**
-	 * Gibt den Spielzustand zur�ck, der durchs Ausf�hren der Aktionsfelder und
-	 * Feldzus�tze erreicht wird.
+	 * Gibt den Spielzustand zur�ck, der durchs Ausf�hren der Aktionsfelder
+	 * und Feldzus�tze erreicht wird.
 	 */
 	void feldaktionenAusfuehren() {
 		// Sonderfelder
@@ -183,6 +188,10 @@ public class Spielzustand implements Cloneable {
 	public int abstandZurNaechstenFlagge(final int besitzer) {
 		Roboter roboter = this.roboter[besitzer];
 		Flagge flagge = this.flaggen[roboter.naechsteFlagge];
+
+		if (roboter.position == -1)
+			return Integer.MAX_VALUE;
+
 		Feld feld = this.feldAufPosition(roboter.position);
 
 		for (int ring = 1; ring < Parameter.ANZAHL_SPIELFELDRINGE; ++ring) {
@@ -199,9 +208,16 @@ public class Spielzustand implements Cloneable {
 					feld = this.feldAufPosition(feld.nachbarn[richtung]);
 				}
 				++richtung;
+				richtung %= 6;
 			}
 		}
 
 		return Integer.MAX_VALUE;
+	}
+
+	public void handkartenSortieren() {
+		for (Roboter roboter : this.roboter) {
+			Collections.sort(roboter.karten);
+		}
 	}
 }

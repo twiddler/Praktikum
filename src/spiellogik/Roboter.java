@@ -10,18 +10,17 @@ import java.util.ArrayList;
  */
 public final class Roboter extends Bewegbar implements Cloneable {
 
-	
 	/**
 	 * Feld, auf dem der Roboter steht, referenziert durch dessen Position.
 	 */
 	int blickrichtung;
 	public int leben;
 	public int gesundheit;
-	int geld;
+	public int geld;
 	boolean zerstoert = false;
 	public ArrayList<Karte> karten;
 	public ArrayList<Karte> gesperrteKarten;
-	boolean poweredDown = false;
+	public boolean poweredDown = false;
 
 	/**
 	 * Die nächste zu berührende Flagge. Die erste Flagge hat die Nummer 0.
@@ -52,13 +51,13 @@ public final class Roboter extends Bewegbar implements Cloneable {
 		}
 
 		result.karten = new ArrayList<Karte>();
-		for (int i = 0; i < this.karten.size(); i++) {
-			result.karten.add(this.karten.get(i).clone());
+		for (Karte karte : this.karten) {
+			result.karten.add(karte.clone());
 		}
 
 		result.gesperrteKarten = new ArrayList<Karte>();
-		for (int i = 0; i < this.gesperrteKarten.size(); i++) {
-			result.gesperrteKarten.add(this.gesperrteKarten.get(i).clone());
+		for (Karte karte : this.gesperrteKarten) {
+			result.gesperrteKarten.add(karte.clone());
 		}
 
 		return result;
@@ -70,8 +69,8 @@ public final class Roboter extends Bewegbar implements Cloneable {
 
 	/**
 	 * Der Roboter soll schritte-mal nach vorne laufen. Dazu soll er den Feldern
-	 * mitteilen, dass er sie verlässt und betritt. Falls er zwischendurch stirbt,
-	 * soll er nicht mehr laufen.
+	 * mitteilen, dass er sie verlässt und betritt. Falls er zwischendurch
+	 * stirbt, soll er nicht mehr laufen.
 	 */
 	void laufen(final int schritte, final Spielzustand zustand) {
 		for (int i = 0; i < schritte; ++i) {
@@ -79,17 +78,17 @@ public final class Roboter extends Bewegbar implements Cloneable {
 				return;
 			}
 
-			Feld feld = zustand.feldAufPosition(position);
-			if (feld.verlassen(this, blickrichtung, zustand)) {
-				zustand.feldAufPosition(feld.nachbarn[position]).betreten(this, zustand);
+			Feld feld = zustand.feldAufPosition(this.position);
+			if (feld.verlassen(this, this.blickrichtung, zustand)) {
+				zustand.feldAufPosition(feld.nachbarn[this.blickrichtung]).betreten(this, zustand);
 			}
 		}
 	}
 
 	/**
-	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf die
-	 * nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw. auf das
-	 * Startfeld.
+	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf
+	 * die nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw.
+	 * auf das Startfeld.
 	 */
 	void zerstoeren(final Spielzustand zustand) {
 		if (!this.zerstoert) {
@@ -155,19 +154,19 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	}
 
 	/**
-	 * Ermittelt welche Karten im Programmslot gespielt werden können. Bei vollem
-	 * Leben sind das alles, ansonsten müssen die gesperrten Karten betrachtet
-	 * werden.
+	 * Ermittelt welche Karten im Programmslot gespielt werden können. Bei
+	 * vollem Leben sind das alles, ansonsten müssen die gesperrten Karten
+	 * betrachtet werden.
 	 */
 	public ArrayList<Karte> spielbareKarten(int slot) {
 		ArrayList<Karte> result;
 		int geblockteKarten = this.gesperrteKarten.size();
-		if (this.poweredDown) {
+		if (this.poweredDown || this.leben == 0) {
 			result = new ArrayList<Karte>();
 			result.add(Karte.dummy);
-		} else if (Parameter.ZUEGE_PRO_RUNDE - slot > geblockteKarten){
+		} else if (Parameter.ZUEGE_PRO_RUNDE - slot > geblockteKarten) {
 			result = this.karten;
-		}else {
+		} else {
 			result = new ArrayList<Karte>();
 			result.add(this.gesperrteKarten.get(slot - geblockteKarten - 1));
 		}

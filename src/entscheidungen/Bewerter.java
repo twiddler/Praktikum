@@ -7,8 +7,8 @@ import spiellogik.Spielzustand;
 public class Bewerter {
 
 	/**
-	 * Länge der Bewertungstupel. Nötig für die Generierung des schlechtesten und
-	 * besten Wertes.
+	 * Länge der Bewertungstupel. Nötig für die Generierung des schlechtesten
+	 * und besten Wertes.
 	 **/
 	final int anzahlBewertungen = 8;
 
@@ -22,7 +22,7 @@ public class Bewerter {
 		boolean gegnerLebtNichtMehr = gegner.leben == 0;
 		int unsereNaechsteFlagge = wir.naechsteFlagge;
 		int seineNaechsteFlagge = -gegner.naechsteFlagge;
-		int unserAbstandZurNaechstenFlagge = -zustand.abstandZurNaechstenFlagge(0);
+		int unserAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(0);
 		int gegnerAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(1);
 
 		return new int[] { wirGewinnen ? 1 : 0, gegnerGewinntNicht ? 1 : 0, wirLebenNoch ? 1 : 0,

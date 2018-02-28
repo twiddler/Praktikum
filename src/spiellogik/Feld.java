@@ -84,7 +84,7 @@ public class Feld implements Cloneable {
 	 * Gibt die Kante in gegebener Richtung als Objekt zurück.
 	 */
 	final Kante kanteInRichtung(final int richtung) {
-		return this.kanten[(this.drehung - richtung) % 6];
+		return this.kanten[((this.drehung - richtung) % 6 + 6) % 6];
 	}
 
 	/**

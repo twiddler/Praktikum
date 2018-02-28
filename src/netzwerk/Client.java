@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,7 +17,10 @@ import org.apache.commons.cli.ParseException;
 import org.json.JSONObject;
 
 import entscheidungen.Bewerter;
+import entscheidungen.Bieter;
 import entscheidungen.Entscheider;
+import entscheidungen.EntscheiderMDFFMN;
+import spiellogik.Karte;
 import spiellogik.Spielzustand;
 
 class Client {
@@ -25,7 +28,7 @@ class Client {
 	// Per Kommandozeile übergebene Parameter
 	static String host;
 	static int port;
-	static int spielID;
+	static long spielID;
 	static int spielerID;
 
 	final static String TEAM = "xXx Players xXx";
@@ -76,31 +79,43 @@ class Client {
 			// Einloggen
 			System.out.println("Einloggen ...");
 			out.println(login().toString() + "\n\n");
-			JSONObject spiel = new JSONObject(in.readLine());
+			JSONObject spiel = naechsteNachricht(in);
 			spielID = spiel.getInt("spielID");
 			spielerID = spiel.getInt("spielerID");
 			System.out.println("Eingeloggt in Spiel " + spielID + " als Spieler " + spielerID);
 
 			// Auf alle Spieler warten, dann ersten Spielzustand erhalten
-			Entscheider entscheider = new Entscheider(new Bewerter());
-			Spielzustand zustand = Parser.ersteRunde(naechsteNachricht(in), spielerID);
-
-			for (int phase = 0; phase < 3; ++phase) {
+			Entscheider entscheider = new EntscheiderMDFFMN(new Bewerter());
+			JSONObject ersteRunde = naechsteNachricht(in);
+			Spielzustand zustand = Parser.ersteRunde(ersteRunde, spielerID);
+			ArrayList<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));
+			
+			while (true) {
 				
-								
 				// -> Gebote schicken
-				// <- wer wie geboten hat
+				JSONObject gebote = Serialisierer.gebote(Bieter.gebote(zustand, bietoptionen));
+				out.println(datenVerpacken(gebote));
+				
+				// <- Auktionsergebnis
+				zustand = Parser.auktionsergebnisAuswerten(naechsteNachricht(in).getJSONArray("auktionsergebnis"), zustand, spielerID);
 
 				// -> Programm
+				zustand.handkartenSortieren();
 				JSONObject programm = Serialisierer.programm(entscheider.entscheiden(zustand));
 				out.println(datenVerpacken(programm));
 
-				// <- programme, spielbrett, spieler, roboter, sieger
-				zustand = Parser.nteRunde(naechsteNachricht(in), spielerID);
+				// <- Gespielte Runde (Programme, ..., Sieger)
+				zustand = Parser.nteRunde(naechsteNachricht(in), spielerID, zustand);
 
 				// -> Powerdown? (nein, obv)
+				out.println(datenVerpacken(Serialisierer.powerdown(entscheider.powerdown(zustand))));
+				
 				// <- Powerdowns, Handkarten, Bietbares
-
+				JSONObject naechsteRunde = naechsteNachricht(in);
+				zustand = Parser.powerdowns(naechsteRunde.getJSONArray("powerDowns"), spielerID, zustand);
+				zustand = Parser.handkarten(naechsteRunde.getJSONArray("handkarten"), spielerID, zustand);
+				bietoptionen = Parser.bietoptionen(naechsteRunde.getJSONArray("bietoptionen"));
+				
 			}
 
 		} finally {
@@ -113,6 +128,7 @@ class Client {
 		do {
 			nachricht = in.readLine();
 		} while (nachricht.isEmpty());
+		System.out.println("<  "+(new JSONObject(nachricht)).toString());
 		return new JSONObject(nachricht);
 	}
 	
@@ -134,6 +150,8 @@ class Client {
 		result.put("spielerID", spielerID);
 		result.put("daten", daten);
 		result.put("message", "");
+		
+		System.out.println(" > "+result.toString());
 
 		return result.toString()+"\n\n";
 

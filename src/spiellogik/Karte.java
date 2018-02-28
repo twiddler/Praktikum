@@ -1,6 +1,6 @@
 package spiellogik;
 
-public final class Karte implements Cloneable {
+public final class Karte implements Cloneable, Comparable<Karte> {
 
 	public int prioritaet;
 	int drehung_roboter;
@@ -26,6 +26,25 @@ public final class Karte implements Cloneable {
 		}
 
 		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+	    if (obj == null) {
+	        return false;
+	    }
+	    if (!Karte.class.isAssignableFrom(obj.getClass())) {
+	        return false;
+	    }
+	    return this.prioritaet == ((Karte) obj).prioritaet;
+	}
+	
+	@Override
+	public int compareTo(Karte karte) {
+	    if (karte == null) {
+	    	throw new NullPointerException();
+	    }
+	    return this.prioritaet - karte.prioritaet;
 	}
 
 }

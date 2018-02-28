@@ -81,6 +81,16 @@ public class Parser {
 					virtuell, karten, new ArrayList<>());
 		}
 
+		// Falls ein Roboter ausgeschieden ist, den anderen mit einem
+		// Platzhalter füllen
+		if (roboterJSON.length() == 1) {
+			for (int i = 0; i < result.length; ++i) {
+				if (result[i] == null) {
+					result[i] = new Roboter(0, 0, 0, 0, 0, 0, true, new ArrayList<>(), new ArrayList<>());
+				}
+			}
+		}
+
 		return result;
 	}
 
@@ -89,24 +99,27 @@ public class Parser {
 	 * Runden bis auf die erste, weil hier gesperrte Karten und Kontostände
 	 * berechnet werden müssen.
 	 */
-	static Roboter[] roboterParsen(int startgeld, JSONArray spielerJSON, JSONArray roboterJSON, int unsereID,
-			JSONArray programmeJSON) {
-		Roboter[] result = roboterParsen(startgeld, spielerJSON, roboterJSON, unsereID, programmeJSON);
+	static Roboter[] roboterParsen(JSONArray spielerJSON, JSONArray roboterJSON, int unsereID, JSONArray programmeJSON,
+			Spielzustand zustand) {
+		Roboter[] result = roboterParsen(0, spielerJSON, roboterJSON, unsereID);
+
+		// Kontostand übernehmen
+		for (int i = 0; i < zustand.roboter.length; ++i) {
+			result[i].geld = zustand.roboter[i].geld;
+		}
 
 		for (int i = 0; i < roboterJSON.length(); ++i) {
 			// Wessen gesperrte Karten wollen wir berechnen?
 			JSONObject programmVonSpieler = programmeJSON.getJSONObject(i);
 			int roboterID = programmVonSpieler.getInt("spielerID") == unsereID ? 0 : 1;
 
-			int gesperrteSlots = Math.min(Parameter.ZUEGE_PRO_RUNDE, result[roboterID].gesundheit - 1);
+			int freieSlots = Math.max(0, Math.min(Parameter.ZUEGE_PRO_RUNDE, result[roboterID].gesundheit - 1));
 			ArrayList<Karte> gesperrteKarten = new ArrayList<>();
 			JSONArray programm = programmVonSpieler.getJSONArray("programm");
-			for (int slot = Parameter.ZUEGE_PRO_RUNDE - gesperrteSlots; slot < Parameter.ZUEGE_PRO_RUNDE; ++slot) {
+			for (int slot = freieSlots; slot < Parameter.ZUEGE_PRO_RUNDE; ++slot) {
 				gesperrteKarten.add(karteMitPrioritaet(programm.getInt(slot)));
 			}
 			result[roboterID].gesperrteKarten = gesperrteKarten;
-
-			// TODO: Kontostand bestimmen
 		}
 
 		return result;
@@ -115,8 +128,14 @@ public class Parser {
 	static Feld[] felderParsen(JSONArray felder) {
 
 		Feld[] result = new Feld[felder.length()];
-		List<List<Integer>> posSonderfeld = new ArrayList<>(5);
-		List<List<Integer>> posFeldzusatz = new ArrayList<>(2);
+		List<List<Integer>> posSonderfeld = new ArrayList<>();
+		for (int i = 0; i < 5; ++i) {
+			posSonderfeld.add(new ArrayList<>());
+		}
+		List<List<Integer>> posFeldzusatz = new ArrayList<>();
+		for (int i = 0; i < 2; ++i) {
+			posFeldzusatz.add(new ArrayList<>());
+		}
 		List<Integer> posLaser = new ArrayList<Integer>();
 		int[][] nachbarListe = nachbarListe();
 
@@ -136,8 +155,7 @@ public class Parser {
 
 			Kante[] kanten = new Kante[6];
 			for (int j = 0; j < pKanten.length(); j++) {
-				String kante = (String) pKanten.get(i);
-				switch (kante) {
+				switch (pKanten.getString(j)) {
 				case "mauer":
 					kanten[j] = mauer;
 					break;
@@ -229,7 +247,7 @@ public class Parser {
 
 		for (int i = 0; i < felder.length(); i++) {
 			JSONObject feld = felder.getJSONObject(i);
-			int flaggenNr = feld.getJSONObject("zusatze").getInt("flagge");
+			int flaggenNr = feld.getJSONObject("zusaetze").getInt("flagge");
 			if (flaggenNr != 0) {
 				result[flaggenNr - 1] = new Flagge(i, flaggenNr - 1);
 			}
@@ -255,176 +273,189 @@ public class Parser {
 
 	public static Spielzustand ersteRunde(JSONObject json, int unsereID) {
 
+		Roboter[] roboter = roboterParsen(json.getInt("startgeld"), json.getJSONArray("spieler"),
+				json.getJSONArray("roboter"), unsereID);
+		Feld[] felder = felderParsen(json.getJSONArray("spielbrett"));
+		Flagge[] flaggen = flaggenParsen(json.getJSONArray("spielbrett"));
+
 		// Fürs spätere Nachschlagen das Deck abspeichern
 		deck = kartenParsen(json.getJSONArray("kartendeck"));
 
-		Roboter[] roboter = roboterParsen(json.getInt("startgeld"), json.getJSONArray("spieler"),
-				json.getJSONArray("roboter"), unsereID);
+		// Handkarten ins Deck
+		for (Roboter r : roboter) {
+			deck.addAll(r.karten);
+		}
+
+		return new Spielzustand(roboter, felder, 0, flaggen);
+
+	}
+
+	public static Spielzustand nteRunde(JSONObject json, int unsereID, Spielzustand zustand) {
+
+		Roboter[] roboter = roboterParsen(json.getJSONArray("spieler"), json.getJSONArray("roboter"), unsereID,
+				json.getJSONArray("programme"), zustand);
 		Feld[] felder = felderParsen(json.getJSONArray("spielbrett"));
 		Flagge[] flaggen = flaggenParsen(json.getJSONArray("spielbrett"));
 
 		return new Spielzustand(roboter, felder, 0, flaggen);
 
 	}
-
-	public static Spielzustand nteRunde(JSONObject json, int unsereID) {
-
-		Roboter[] roboter = roboterParsen(json.getInt("startgeld"), json.getJSONArray("spieler"),
-				json.getJSONArray("roboter"), unsereID);
-		Feld[] felder = felderParsen(json.getJSONArray("spielbrett"));
-		Flagge[] flaggen = flaggenParsen(json.getJSONArray("spielbrett"));
-
-		return new Spielzustand(roboter, felder, 0, flaggen);
-
-	}
-
-	public Spielzustand parseSpielzustand(JSONObject jsonSpielzustand) throws JSONException {
-		JSONArray Felder = jsonSpielzustand.getJSONArray("spielbrett");
-		Feld[] retFelder = new Feld[Felder.length()];
-		List<List<Integer>> posSonderfeld = new ArrayList<>(5);
-		List<List<Integer>> posFeldzusatz = new ArrayList<>(2);
-		List<Integer> posLaser = new ArrayList<Integer>();
-		int[][] nachbarListe = nachbarListe();
-
-		Flagge[] flaggen = new Flagge[4];
-
-		Kante mauer = new Mauer();
-		Kante schlucht = new Schlucht();
-		Kante einbahn_rein = new EinbahnRein();
-		Kante einbahn_raus = new EinbahnRaus();
-		Kante laser = new Laser();
-		Kante normal = new Kante();
-
-		for (int i = 0; i < Felder.length(); i++) {
-			JSONObject pFeld = Felder.getJSONObject(i);
-
-			JSONObject pTyp = pFeld.getJSONObject("typ");
-			JSONObject zusaetze = pFeld.getJSONObject("zusaetze");
-
-			JSONObject zusaetzeMitte = zusaetze.getJSONObject("mitte");
-			JSONArray pKanten = zusaetze.getJSONArray("kanten");
-
-			Kante[] kanten = new Kante[6];
-			for (int j = 0; j < pKanten.length(); j++) {
-				String kante = (String) pKanten.get(i);
-				switch (kante) {
-				case "mauer":
-					kanten[j] = mauer;
-					break;
-				case "schlucht":
-					kanten[j] = schlucht;
-					break;
-				case "einbahnInnen":
-					kanten[j] = einbahn_rein;
-					break;
-				case "einbahnAussen":
-					kanten[j] = einbahn_raus;
-					break;
-				case "lazor":
-					kanten[j] = laser;
-					posLaser.add(j);
-					break;
-				default:
-					kanten[j] = normal;
-					break;
-				}
-			}
-
-			Zusatz zusatz;
-			String zusatzName = zusaetzeMitte.getString("zusatztyp");
-			switch (zusatzName) {
-			case "zahltag":
-				zusatz = new Zahltag(100);
-				posFeldzusatz.get(0).add(i);
-				break;
-			case "presse":
-				JSONArray aktivIn = zusaetzeMitte.getJSONArray("aktiv");
-				boolean[] aktiv = new boolean[5];
-				for (int j = 0; j < aktiv.length; j++) {
-					if (aktivIn.toString().contains(Integer.toString(j))) {
-						aktiv[j] = true;
-					} else {
-						aktiv[j] = false;
-					}
-				}
-				zusatz = new Presse(aktiv);
-				posFeldzusatz.get(1).add(i);
-				break;
-			default:
-				zusatz = null;
-				break;
-			}
-
-			int flaggenNr = zusaetzeMitte.getInt("flagge");
-			if (flaggenNr != 0) {
-				flaggen[flaggenNr - 1] = new Flagge(i, flaggenNr - 1);
-			}
-
-			String typ = pTyp.getString("feldtyp");
-			switch (typ) {
-			case "dreh":
-				retFelder[i] = new Drehfeld(nachbarListe[i], kanten, zusatz, i, pTyp.getInt("richtung"));
-				posSonderfeld.get(3).add(i);
-				break;
-			case "loch":
-				retFelder[i] = new Loch(nachbarListe[i], kanten, zusatz, i);
-				break;
-			case "laufband":
-				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, i, pTyp.getInt("richtung"));
-				posSonderfeld.get(2).add(i);
-				break;
-			case "aixpress":
-				retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, i, pTyp.getInt("richtung"));
-				posSonderfeld.get(0).add(i);
-				posSonderfeld.get(1).add(i);
-				break;
-			case "reparatur":
-				retFelder[i] = new Reparaturfeld(nachbarListe[i], kanten, zusatz, i, 1); // Gesundheit??
-				posSonderfeld.get(4).add(i);
-				break;
-			default:
-				retFelder[i] = new Feld(nachbarListe[i], kanten, zusatz, i);
-				break;
-			}
-		}
-
-		int[][] retSonderfeld = befuelleArray2(posSonderfeld);
-		int[][] retFeldzusatz = befuelleArray2(posFeldzusatz);
-		int[] retLaser = befuelleArray(posLaser);
-
-		// int geld = jsonSpielzustand.getInt("startgeld");
-		JSONArray spieler = jsonSpielzustand.getJSONArray("spieler");
-		JSONArray roboter = jsonSpielzustand.getJSONArray("roboter");
-
-		Roboter[] roboterArray = new Roboter[2];
-
-		for (int i = 0; i < 2; i++) {
-			JSONObject robo = roboter.getJSONObject(i);
-			JSONObject pos = robo.getJSONObject("position");
-			JSONObject sp = roboter.getJSONObject(i);
-			JSONArray spKarten = sp.getJSONArray("karten");
-			ArrayList<Karte> karten = new ArrayList<Karte>();
-			for (int j = 0; j < spKarten.length(); j++) {
-				JSONObject pKarte = spKarten.getJSONObject(j);
-				karten.add(new Karte(pKarte.getInt("prioritaet"), pKarte.getInt("rotation"), pKarte.getInt("schritte"),
-						pKarte.getInt("felddrehung")));
-			}
-			Roboter roboterFertig = new Roboter(pos.getInt("feldindex"), pos.getInt("richtung"), sp.getInt("leben"),
-					robo.getInt("gesundheit"), 0, sp.getInt("nextFlag") - 1, robo.getBoolean("virtuell"), karten); // geld
-																													// fehlt
-			if (spieler.getJSONObject(0).getInt("id") == spielerID) {
-				roboterArray[0] = roboterFertig;
-			} else {
-				roboterArray[1] = roboterFertig;
-			}
-		}
-
-		Spielzustand ret = new Spielzustand(roboterArray, retFelder, 0, flaggen);
-		Spielzustand.positionenMitSonderfeld = retSonderfeld;
-		Spielzustand.positionenMitFeldzusatz = retFeldzusatz;
-		Spielzustand.positionenMitLasern = retLaser;
-		return ret;
-	}
+	//
+	// public Spielzustand parseSpielzustand(JSONObject jsonSpielzustand) throws
+	// JSONException {
+	// JSONArray Felder = jsonSpielzustand.getJSONArray("spielbrett");
+	// Feld[] retFelder = new Feld[Felder.length()];
+	// List<List<Integer>> posSonderfeld = new ArrayList<>(5);
+	// List<List<Integer>> posFeldzusatz = new ArrayList<>(2);
+	// List<Integer> posLaser = new ArrayList<Integer>();
+	// int[][] nachbarListe = nachbarListe();
+	//
+	// Flagge[] flaggen = new Flagge[4];
+	//
+	// Kante mauer = new Mauer();
+	// Kante schlucht = new Schlucht();
+	// Kante einbahn_rein = new EinbahnRein();
+	// Kante einbahn_raus = new EinbahnRaus();
+	// Kante laser = new Laser();
+	// Kante normal = new Kante();
+	//
+	// for (int i = 0; i < Felder.length(); i++) {
+	// JSONObject pFeld = Felder.getJSONObject(i);
+	//
+	// JSONObject pTyp = pFeld.getJSONObject("typ");
+	// JSONObject zusaetze = pFeld.getJSONObject("zusaetze");
+	//
+	// JSONObject zusaetzeMitte = zusaetze.getJSONObject("mitte");
+	// JSONArray pKanten = zusaetze.getJSONArray("kanten");
+	//
+	// Kante[] kanten = new Kante[6];
+	// for (int j = 0; j < pKanten.length(); j++) {
+	// String kante = (String) pKanten.get(j);
+	// switch (kante) {
+	// case "mauer":
+	// kanten[j] = mauer;
+	// break;
+	// case "schlucht":
+	// kanten[j] = schlucht;
+	// break;
+	// case "einbahnInnen":
+	// kanten[j] = einbahn_rein;
+	// break;
+	// case "einbahnAussen":
+	// kanten[j] = einbahn_raus;
+	// break;
+	// case "lazor":
+	// kanten[j] = laser;
+	// posLaser.add(j);
+	// break;
+	// default:
+	// kanten[j] = normal;
+	// break;
+	// }
+	// }
+	//
+	// Zusatz zusatz;
+	// String zusatzName = zusaetzeMitte.getString("zusatztyp");
+	// switch (zusatzName) {
+	// case "zahltag":
+	// zusatz = new Zahltag(100);
+	// posFeldzusatz.get(0).add(i);
+	// break;
+	// case "presse":
+	// JSONArray aktivIn = zusaetzeMitte.getJSONArray("aktiv");
+	// boolean[] aktiv = new boolean[5];
+	// for (int j = 0; j < aktiv.length; j++) {
+	// if (aktivIn.toString().contains(Integer.toString(j))) {
+	// aktiv[j] = true;
+	// } else {
+	// aktiv[j] = false;
+	// }
+	// }
+	// zusatz = new Presse(aktiv);
+	// posFeldzusatz.get(1).add(i);
+	// break;
+	// default:
+	// zusatz = null;
+	// break;
+	// }
+	//
+	// int flaggenNr = zusaetzeMitte.getInt("flagge");
+	// if (flaggenNr != 0) {
+	// flaggen[flaggenNr - 1] = new Flagge(i, flaggenNr - 1);
+	// }
+	//
+	// String typ = pTyp.getString("feldtyp");
+	// switch (typ) {
+	// case "dreh":
+	// retFelder[i] = new Drehfeld(nachbarListe[i], kanten, zusatz, i,
+	// pTyp.getInt("richtung"));
+	// posSonderfeld.get(3).add(i);
+	// break;
+	// case "loch":
+	// retFelder[i] = new Loch(nachbarListe[i], kanten, zusatz, i);
+	// break;
+	// case "laufband":
+	// retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, i,
+	// pTyp.getInt("richtung"));
+	// posSonderfeld.get(2).add(i);
+	// break;
+	// case "aixpress":
+	// retFelder[i] = new Laufband(nachbarListe[i], kanten, zusatz, i,
+	// pTyp.getInt("richtung"));
+	// posSonderfeld.get(0).add(i);
+	// posSonderfeld.get(1).add(i);
+	// break;
+	// case "reparatur":
+	// retFelder[i] = new Reparaturfeld(nachbarListe[i], kanten, zusatz, i, 1);
+	// // Gesundheit??
+	// posSonderfeld.get(4).add(i);
+	// break;
+	// default:
+	// retFelder[i] = new Feld(nachbarListe[i], kanten, zusatz, i);
+	// break;
+	// }
+	// }
+	//
+	// int[][] retSonderfeld = befuelleArray2(posSonderfeld);
+	// int[][] retFeldzusatz = befuelleArray2(posFeldzusatz);
+	// int[] retLaser = befuelleArray(posLaser);
+	//
+	// // int geld = jsonSpielzustand.getInt("startgeld");
+	// JSONArray spieler = jsonSpielzustand.getJSONArray("spieler");
+	// JSONArray roboter = jsonSpielzustand.getJSONArray("roboter");
+	//
+	// Roboter[] roboterArray = new Roboter[2];
+	//
+	// for (int i = 0; i < 2; i++) {
+	// JSONObject robo = roboter.getJSONObject(i);
+	// JSONObject pos = robo.getJSONObject("position");
+	// JSONObject sp = roboter.getJSONObject(i);
+	// JSONArray spKarten = sp.getJSONArray("karten");
+	// ArrayList<Karte> karten = new ArrayList<Karte>();
+	// for (int j = 0; j < spKarten.length(); j++) {
+	// JSONObject pKarte = spKarten.getJSONObject(j);
+	// karten.add(new Karte(pKarte.getInt("prioritaet"),
+	// pKarte.getInt("rotation"), pKarte.getInt("schritte"),
+	// pKarte.getInt("felddrehung")));
+	// }
+	// Roboter roboterFertig = new Roboter(pos.getInt("feldindex"),
+	// pos.getInt("richtung"), sp.getInt("leben"),
+	// robo.getInt("gesundheit"), 0, sp.getInt("nextFlag") - 1,
+	// robo.getBoolean("virtuell"), karten); // geld
+	// // fehlt
+	// if (spieler.getJSONObject(0).getInt("id") == spielerID) {
+	// roboterArray[0] = roboterFertig;
+	// } else {
+	// roboterArray[1] = roboterFertig;
+	// }
+	// }
+	//
+	// Spielzustand ret = new Spielzustand(roboterArray, retFelder, 0, flaggen);
+	// Spielzustand.positionenMitSonderfeld = retSonderfeld;
+	// Spielzustand.positionenMitFeldzusatz = retFeldzusatz;
+	// Spielzustand.positionenMitLasern = retLaser;
+	// return ret;
+	// }
 
 	static void setzeNachbarn(int index1, int index2, int rotation, int[][] felderNachbarn) {
 		felderNachbarn[index1][rotation] = index2;
@@ -512,5 +543,76 @@ public class Parser {
 			}
 		}
 		return ret;
+	}
+
+	public static ArrayList<Karte> bietoptionen(JSONArray bietoptionen) {
+
+		return kartenParsen(bietoptionen);
+
+	}
+
+	/**
+	 * Gibt den Gewinnern der Auktionen die Karten und zieht die Gebote vom
+	 * Kontostand ab
+	 */
+	public static Spielzustand auktionsergebnisAuswerten(JSONArray auktionsergebnisse, Spielzustand zustand,
+			int unsereID) {
+
+		for (int i = 0; i < auktionsergebnisse.length(); ++i) {
+			// Für jede Karte den Höchstbietenden ermitteln
+			JSONObject auktionsergebnis = auktionsergebnisse.getJSONObject(i);
+			JSONArray gebote = auktionsergebnis.getJSONArray("gebote");
+			Integer hoechstbietender = null;
+			int hoechstesGebot = 0; // 0 ^= kein Gebot
+			for (int j = 0; j < gebote.length(); ++j) {
+				JSONObject gebot = gebote.getJSONObject(j);
+				int preis = gebot.getInt("preis");
+				int roboterID = gebot.getInt("spieler") == unsereID ? 0 : 1;
+
+				// Bei Gleichstand kriegt keiner die Karte
+				if (preis == hoechstesGebot) {
+					hoechstbietender = null;
+				} else if (preis > hoechstesGebot) {
+					hoechstesGebot = preis;
+					hoechstbietender = roboterID;
+				}
+
+				zustand.roboter[roboterID].geld -= preis;
+			}
+
+			// Ihm die Karte geben
+			if (hoechstbietender != null) {
+				int prioritaet = auktionsergebnis.getInt("karte");
+				zustand.roboter[hoechstbietender].karten.add(karteMitPrioritaet(prioritaet));
+			}
+		}
+
+		return zustand;
+
+	}
+
+	public static Spielzustand powerdowns(JSONArray powerdowns, int unsereID, Spielzustand zustand) {
+
+		for (Roboter roboter : zustand.roboter) {
+			roboter.poweredDown = false;
+		}
+
+		for (int i = 0; i < powerdowns.length(); ++i) {
+			zustand.roboter[powerdowns.getInt(i) == unsereID ? 0 : 1].poweredDown = true;
+		}
+
+		return zustand;
+
+	}
+
+	public static Spielzustand handkarten(JSONArray handkarten, int unsereID, Spielzustand zustand) {
+
+		for (int i = 0; i < handkarten.length(); ++i) {
+			JSONObject o = handkarten.getJSONObject(i);
+			zustand.roboter[o.getInt("spielerID") == unsereID ? 0 : 1].karten = kartenParsen(o.getJSONArray("karten"));
+		}
+
+		return zustand;
+
 	}
 }
