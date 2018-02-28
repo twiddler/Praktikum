@@ -244,12 +244,14 @@ public class EntscheiderIDK extends Entscheider {
 	 * Gegeben einen Spielzustand, gibt uns diese Funktion die Karten, die wir
 	 * spielen sollen.
 	 */
+	@Override
 	public Karte[] entscheiden(Spielzustand zustand) {
 		this.wurzel = new Knoten(zustand);
 		this.zuegeAnalysieren();
 		return zuSpielendeKarten();
 	}
 
+	@Override
 	public boolean powerdown(Spielzustand zustand) {
 		// TODO: Hier vielleicht noch was etwas komplizierteres
 		return false;
