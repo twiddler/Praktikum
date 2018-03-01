@@ -1,11 +1,10 @@
 package spiellogik;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Speichert den Zustand, in dem sich das Spiel befindet. Dazu zï¿½hlen die
- * Verbindungen der Felder, Zustï¿½nde der Roboter, usw..
+ * Speichert den Zustand, in dem sich das Spiel befindet. Dazu zählen die
+ * Verbindungen der Felder, Zustände der Roboter, usw..
  * 
  * @author xXx Players xXx
  *
@@ -33,11 +32,11 @@ public class Spielzustand implements Cloneable {
 	int zug;
 
 	/**
-	 * Indizes der Felder, in Reihenfolge der Ausfï¿½hrung:
-	 * Aixpresslaufbï¿½nder, Aixpresslaufbï¿½nder, Laufbï¿½nder, Drehscheiben,
-	 * Reparaturfelder. (Aixpresslaufbï¿½nder sind bei uns normale
-	 * Laufbï¿½nder.) Da sich die Positionen nicht ï¿½ndern, ist dieses Feld
-	 * Eigenschaft der Klasse, und muss nur einmal befï¿½llt werden.
+	 * Indizes der Felder, in Reihenfolge der Ausführung: Aixpresslaufbänder,
+	 * Aixpresslaufbänder, Laufbänder, Drehscheiben, Reparaturfelder.
+	 * (Aixpresslaufbänder sind bei uns normale Laufbänder.) Da sich die Positionen
+	 * nicht ändern, ist dieses Feld Eigenschaft der Klasse, und muss nur einmal
+	 * befüllt werden.
 	 */
 	public static int[][] positionenMitSonderfeld;
 
@@ -91,7 +90,7 @@ public class Spielzustand implements Cloneable {
 	public Spielzustand karteSpielen(final int besitzer, final Karte karte) {
 		final Spielzustand result = this.clone();
 
-		Roboter roboter = result.roboter[besitzer];
+		final Roboter roboter = result.roboter[besitzer];
 		roboter.drehen(karte.drehung_roboter);
 		roboter.laufen(karte.schritte, result);
 		if (!roboter.zerstoert) {
@@ -103,8 +102,8 @@ public class Spielzustand implements Cloneable {
 	}
 
 	/**
-	 * Gibt den Spielzustand zurï¿½ck, der durchs Ausfï¿½hren der Aktionsfelder
-	 * und Feldzusï¿½tze erreicht wird.
+	 * Gibt den Spielzustand zurück, der durchs Ausführen der Aktionsfelder und
+	 * Feldzusätze erreicht wird.
 	 */
 	void feldaktionenAusfuehren() {
 		// Sonderfelder
@@ -145,21 +144,21 @@ public class Spielzustand implements Cloneable {
 	}
 
 	void respawns() {
-		for (Roboter r : this.roboter) {
+		for (final Roboter r : this.roboter) {
 			if (r.zerstoert) {
 				r.respawn(this);
 			}
 		}
 
 		if (!this.roboter[0].stehtAufPosition(this.roboter[1].position)) {
-			for (Roboter r : this.roboter) {
+			for (final Roboter r : this.roboter) {
 				r.virtuell = false;
 			}
 		}
 	}
 
 	Spielzustand zugBeenden() {
-		Spielzustand result = this.clone();
+		final Spielzustand result = this.clone();
 
 		result.feldaktionenAusfuehren();
 		result.roboterlaserFeuern();
@@ -171,7 +170,7 @@ public class Spielzustand implements Cloneable {
 	}
 
 	/**
-	 * Gibt das position-te Feld zurï¿½ck.
+	 * Gibt das position-te Feld zurück.
 	 */
 	Feld feldAufPosition(final int position) {
 		return this.felder[position];
@@ -186,8 +185,8 @@ public class Spielzustand implements Cloneable {
 	 * Ignoriert Hindernisse.
 	 */
 	public int abstandZurNaechstenFlagge(final int besitzer) {
-		Roboter roboter = this.roboter[besitzer];
-		Flagge flagge = this.flaggen[roboter.naechsteFlagge];
+		final Roboter roboter = this.roboter[besitzer];
+		final Flagge flagge = this.flaggen[roboter.naechsteFlagge];
 
 		if (roboter.position == -1)
 			return Integer.MAX_VALUE;
@@ -216,7 +215,7 @@ public class Spielzustand implements Cloneable {
 	}
 
 	public void handkartenSortieren() {
-		for (Roboter roboter : this.roboter) {
+		for (final Roboter roboter : this.roboter) {
 			Collections.sort(roboter.karten);
 		}
 	}

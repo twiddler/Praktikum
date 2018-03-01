@@ -7,6 +7,10 @@ public final class Karte implements Cloneable, Comparable<Karte> {
 	int schritte;
 	int drehung_feld;
 
+	/**
+	 * Roboter die tot sind oder einen Powerdown ausführen spielen die Dummykarte.
+	 * So können wir ohne Spezialfälle unsere Suchen durchführen.
+	 */
 	public static Karte dummy = new Karte(Integer.MIN_VALUE, 0, 0, 0);
 
 	public Karte(final int prioritaet, final int drehung_roboter, final int schritte, final int drehung_feld) {
@@ -27,24 +31,24 @@ public final class Karte implements Cloneable, Comparable<Karte> {
 
 		return result;
 	}
-	
+
 	@Override
-	public boolean equals(Object obj) {
-	    if (obj == null) {
-	        return false;
-	    }
-	    if (!Karte.class.isAssignableFrom(obj.getClass())) {
-	        return false;
-	    }
-	    return this.prioritaet == ((Karte) obj).prioritaet;
+	public boolean equals(final Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (!Karte.class.isAssignableFrom(obj.getClass())) {
+			return false;
+		}
+		return this.prioritaet == ((Karte) obj).prioritaet;
 	}
-	
+
 	@Override
-	public int compareTo(Karte karte) {
-	    if (karte == null) {
-	    	throw new NullPointerException();
-	    }
-	    return this.prioritaet - karte.prioritaet;
+	public int compareTo(final Karte karte) {
+		if (karte == null) {
+			throw new NullPointerException();
+		}
+		return this.prioritaet - karte.prioritaet;
 	}
 
 }

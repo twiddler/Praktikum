@@ -105,23 +105,20 @@ public class Feld implements Cloneable {
 				break;
 			}
 		}
-
-		if (richtung == -1) {
-			System.err.println("Fehler beim Bestimmen der Richtung");
-		}
+		assert richtung != -1 : "Fehler beim Bestimmen der Richtung";
 
 		if (this.kanteInRichtung(richtung).eintreten(b, zustand)) {
 			boolean betritt = true;
 
 			// Nicht virtuelle Roboter können schieben
 			if (b instanceof Roboter && !((Roboter) b).virtuell) {
-				for (Roboter roboter : zustand.roboter) {
+				for (final Roboter roboter : zustand.roboter) {
 
 					// Nicht virtuelle Roboter können geschoben werden
 					if (roboter.stehtAufPosition(this.position) && !roboter.virtuell) {
 						betritt = false;
-						int gegenrichtung = (richtung + 3) % 6;
-						Feld nachbar = zustand.feldAufPosition(this.nachbarn[gegenrichtung]);
+						final int gegenrichtung = (richtung + 3) % 6;
+						final Feld nachbar = zustand.feldAufPosition(this.nachbarn[gegenrichtung]);
 
 						// Über eine Schlucht können wir immer schieben, danach müssen es beide Kanten
 						// zulassen

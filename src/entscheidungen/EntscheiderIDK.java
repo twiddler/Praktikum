@@ -1,6 +1,7 @@
 package entscheidungen;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -97,7 +98,7 @@ public class EntscheiderIDK extends Entscheider {
 		}
 
 		// Für beide Roboter mögliche Züge berechnen
-		ArrayList<TreeMap<Integer, Knoten>> kinder = new ArrayList<>();
+		List<TreeMap<Integer, Knoten>> kinder = new ArrayList<>();
 		for (int i = 0; i < 2; ++i) {
 			TreeMap<Integer, Knoten> k = new TreeMap<>();
 			for (Karte karte : knoten.zustand.roboter[i].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
@@ -122,7 +123,7 @@ public class EntscheiderIDK extends Entscheider {
 	 */
 	Knoten welchesKind(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
 
-		ArrayList<Knoten> vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder);
+		List<Knoten> vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder);
 
 		Knoten result = vertreterListe.remove(vertreterListe.size() - 1);
 		while (!vertreterListe.isEmpty()) {
@@ -147,7 +148,7 @@ public class EntscheiderIDK extends Entscheider {
 	 * 
 	 * Die übergebenen Listen werden von dieser Funktion verändert!
 	 */
-	ArrayList<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
+	List<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
 
 		// Ist das schnellste Kind nett oder blöd?
 		boolean vertrittUns = netteKinder.lastEntry().getKey() > bloedeKinder.lastEntry().getKey();
@@ -175,7 +176,7 @@ public class EntscheiderIDK extends Entscheider {
 	 *            Das letzte Element dieser Liste limitiert die zu betrachtenden
 	 *            Werte aus entsender.
 	 */
-	ArrayList<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> entsender, TreeMap<Integer, Knoten> limiter,
+	List<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> entsender, TreeMap<Integer, Knoten> limiter,
 			boolean vertrittUns) {
 
 		// Priorität zum Trennen bestimmen, bzw. abbrechen
@@ -184,7 +185,7 @@ public class EntscheiderIDK extends Entscheider {
 			prioritaet = limiter.lastKey();
 		} catch (NoSuchElementException e) {
 			if (entsender.isEmpty()) {
-				return new ArrayList<Knoten>();
+				return new ArrayList<>();
 			}
 		}
 
@@ -200,7 +201,7 @@ public class EntscheiderIDK extends Entscheider {
 		}
 
 		// Rekursive Ergebnisse zusammensetzen
-		ArrayList<Knoten> result = new ArrayList<Knoten>();
+		List<Knoten> result = new ArrayList<>();
 		result.add(vertreter);
 		result.addAll(vertreterWaehlen(limiter, entsender, !vertrittUns));
 		return result;

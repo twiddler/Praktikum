@@ -15,11 +15,11 @@ class Knoten {
 	 */
 	int spieler;
 
-	Knoten(Spielzustand zustand) {
+	Knoten(final Spielzustand zustand) {
 		this.zustand = zustand;
 	}
 
-	Knoten(Spielzustand zustand, int spieler, Karte karte) {
+	Knoten(final Spielzustand zustand, final int spieler, final Karte karte) {
 		this(zustand);
 		this.karte = karte;
 		this.spieler = spieler;
@@ -29,7 +29,7 @@ class Knoten {
 	 * Erzeugt einen Knoten mit dem Spielzustand, der erreicht wird wenn spieler
 	 * karte spielt.
 	 */
-	Knoten kindMitKarte(int spieler, Karte karte) {
+	Knoten kindMitKarte(final int spieler, final Karte karte) {
 		return new Knoten(this.zustand.karteSpielen(spieler, karte), spieler, karte);
 	}
 

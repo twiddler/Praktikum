@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -34,9 +34,9 @@ class Client {
 	final static String TEAM = "xXx Players xXx";
 	final static String PASSWORT = "123";
 
-	public static void main(String[] args) throws IOException {
+	public static void main(final String[] args) throws IOException {
 
-		if (false) {
+		if (args.length == 3) {
 			// Kommandozeilenparameter parsen
 			Options options = new Options();
 			Option[] os = { new Option("r", "remote", true, "IPv4 des Spielservers"),
@@ -61,47 +61,51 @@ class Client {
 			}
 			host = cmd.getOptionValue("remote");
 			port = Integer.parseInt(cmd.getOptionValue("localPort").split(" ")[0]);
-			spielID = Integer.parseInt(cmd.getOptionValue("spielID"));
+			spielID = Long.parseLong(cmd.getOptionValue("spielID"));
+		} else {
+			// Testeinstellungen
+			host = "localhost";
+			port = 9911;
+			
+			System.out.print("Spiel-ID eingeben: ");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+			spielID = Long.parseLong(reader.readLine());
 		}
-
-		// Testeinstellungen
-		host = "127.0.0.1";
-		port = 9911;
-		spielID = 12;
 
 		try {
 			// Sockets erstellen
 			@SuppressWarnings("resource")
-			Socket socket = new Socket(host, port);
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			final Socket socket = new Socket(host, port);
+			final PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			final BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 			// Einloggen
 			System.out.println("Einloggen ...");
 			out.println(login().toString() + "\n\n");
-			JSONObject spiel = naechsteNachricht(in);
-			spielID = spiel.getInt("spielID");
+			final JSONObject spiel = naechsteNachricht(in);
+			spielID = spiel.getLong("spielID");
 			spielerID = spiel.getInt("spielerID");
 			System.out.println("Eingeloggt in Spiel " + spielID + " als Spieler " + spielerID);
 
 			// Auf alle Spieler warten, dann ersten Spielzustand erhalten
-			Entscheider entscheider = new EntscheiderMDFFMN(new Bewerter());
-			JSONObject ersteRunde = naechsteNachricht(in);
+			final Entscheider entscheider = new EntscheiderMDFFMN(new Bewerter());
+			final JSONObject ersteRunde = naechsteNachricht(in);
 			Spielzustand zustand = Parser.ersteRunde(ersteRunde, spielerID);
-			ArrayList<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));
-			
+			List<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));
+
 			while (true) {
-				
+
 				// -> Gebote schicken
-				JSONObject gebote = Serialisierer.gebote(Bieter.gebote(zustand, bietoptionen));
+				final JSONObject gebote = Serialisierer.gebote(Bieter.gebote(zustand, bietoptionen));
 				out.println(datenVerpacken(gebote));
-				
+
 				// <- Auktionsergebnis
-				zustand = Parser.auktionsergebnisAuswerten(naechsteNachricht(in).getJSONArray("auktionsergebnis"), zustand, spielerID);
+				zustand = Parser.auktionsergebnisAuswerten(naechsteNachricht(in).getJSONArray("auktionsergebnis"),
+						zustand, spielerID);
 
 				// -> Programm
 				zustand.handkartenSortieren();
-				JSONObject programm = Serialisierer.programm(entscheider.entscheiden(zustand));
+				final JSONObject programm = Serialisierer.programm(entscheider.entscheiden(zustand));
 				out.println(datenVerpacken(programm));
 
 				// <- Gespielte Runde (Programme, ..., Sieger)
@@ -109,13 +113,13 @@ class Client {
 
 				// -> Powerdown? (nein, obv)
 				out.println(datenVerpacken(Serialisierer.powerdown(entscheider.powerdown(zustand))));
-				
+
 				// <- Powerdowns, Handkarten, Bietbares
-				JSONObject naechsteRunde = naechsteNachricht(in);
+				final JSONObject naechsteRunde = naechsteNachricht(in);
 				zustand = Parser.powerdowns(naechsteRunde.getJSONArray("powerDowns"), spielerID, zustand);
 				zustand = Parser.handkarten(naechsteRunde.getJSONArray("handkarten"), spielerID, zustand);
 				bietoptionen = Parser.bietoptionen(naechsteRunde.getJSONArray("bietoptionen"));
-				
+
 			}
 
 		} finally {
@@ -123,18 +127,18 @@ class Client {
 
 	}
 
-	static JSONObject naechsteNachricht(BufferedReader in) throws IOException {
+	static JSONObject naechsteNachricht(final BufferedReader in) throws IOException {
 		String nachricht;
 		do {
 			nachricht = in.readLine();
 		} while (nachricht.isEmpty());
-		System.out.println("<  "+(new JSONObject(nachricht)).toString());
+		System.out.println("<  " + (new JSONObject(nachricht)).toString());
 		return new JSONObject(nachricht);
 	}
-	
+
 	private static JSONObject login() {
-		JSONObject json = new JSONObject();
-		JSONObject loginJSON = new JSONObject();
+		final JSONObject json = new JSONObject();
+		final JSONObject loginJSON = new JSONObject();
 		loginJSON.put("team", TEAM);
 		loginJSON.put("pw", PASSWORT);
 		json.put("login", loginJSON);
@@ -143,18 +147,18 @@ class Client {
 		return json;
 	}
 
-	private static String datenVerpacken(JSONObject daten) {
+	private static String datenVerpacken(final JSONObject daten) {
 
-		JSONObject result = new JSONObject();
+		final JSONObject result = new JSONObject();
 		result.put("spielID", spielID);
 		result.put("spielerID", spielerID);
 		result.put("daten", daten);
 		result.put("message", "");
-		
-		System.out.println(" > "+result.toString());
 
-		return result.toString()+"\n\n";
+		System.out.println(" > " + result.toString());
+
+		return result.toString() + "\n\n";
 
 	}
-	
+
 }
