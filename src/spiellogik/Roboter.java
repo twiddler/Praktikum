@@ -138,8 +138,8 @@ public final class Roboter extends Bewegbar implements Cloneable {
 		}
 	}
 
-	void erhalteGeld(final int geld) {
-		this.geld += geld;
+	void erhalteGeld() {
+		this.geld += Parameter.ZAHLTAG_GEHALT;
 	}
 
 	/**

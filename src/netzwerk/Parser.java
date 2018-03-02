@@ -181,7 +181,7 @@ public class Parser {
 			Zusatz zusatz = null;
 			switch (zusaetzeMitte.getString("zusatztyp")) {
 			case "zahltag":
-				zusatz = new Zahltag(100); // TODO: Wieviel wird ausgezahlt?
+				zusatz = new Zahltag();
 				posFeldzusatz.get(0).add(i);
 				break;
 			case "presse":

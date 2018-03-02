@@ -9,5 +9,6 @@ public class Parameter {
 	static final int ANZAHL_SPIELFELDRINGE = 7;
 	static final int KARTENLISTE_ENSURE_CAPACITY = 25;
 	static final int REPARATUR_BRINGT_GESUNDHEIT = 1;
+	static final int ZAHLTAG_GEHALT = 250;
 
 }
