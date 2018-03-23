@@ -18,7 +18,7 @@ public class EntscheiderMDFFMN extends Entscheider {
 		int freieSlots = Math.min(zustand.roboter[0].gesundheit - 1, Parameter.ZUEGE_PRO_RUNDE);
 		List<ArrayList<Karte>> per = allPermutationsof(freieSlots, zustand.roboter[0].karten);
 		List<Karte> bestOne = new ArrayList<>();
-		int[] bestBewertung = bewerter.schlechtesterWert();
+		int[] bestBewertung = bewerter.schlechtesterWert;
 		for (List<Karte> aktuell : per) {
 			Spielzustand aktuellerZustand = zustand;
 			for (int i = 0; i < Parameter.ZUEGE_PRO_RUNDE; i++) {

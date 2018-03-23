@@ -22,7 +22,7 @@ public class EntscheiderIDKTest {
 		while (!n.isEmpty()) {
 			Map.Entry<Integer, Integer> pb = n.pollLastEntry();
 			Knoten kind = new Knoten(null, 0, null);
-			int[] bewertung = entscheider.bewerter.schlechtesterWert();
+			int[] bewertung = entscheider.bewerter.schlechtesterWert;
 			bewertung[0] = pb.getValue();
 			kind.bewertung = bewertung;
 			netteKinder.put(pb.getKey(), kind);
@@ -32,7 +32,7 @@ public class EntscheiderIDKTest {
 		while (!b.isEmpty()) {
 			Map.Entry<Integer, Integer> pb = b.pollLastEntry();
 			Knoten kind = new Knoten(null, 1, null);
-			int[] bewertung = entscheider.bewerter.schlechtesterWert();
+			int[] bewertung = entscheider.bewerter.schlechtesterWert;
 			bewertung[0] = pb.getValue();
 			kind.bewertung = bewertung;
 			bloedeKinder.put(pb.getKey(), kind);
@@ -41,7 +41,7 @@ public class EntscheiderIDKTest {
 		// Ausgegebene Bewertung prüfen
 		Knoten kind = entscheider.welchesKind(netteKinder, bloedeKinder);
 		int[] bewertungIst = kind.bewertung;
-		int[] bewertungSoll = entscheider.bewerter.schlechtesterWert();
+		int[] bewertungSoll = entscheider.bewerter.schlechtesterWert;
 		bewertungSoll[0] = bewertung1Soll;
 
 		assertArrayEquals(bewertungSoll, bewertungIst);

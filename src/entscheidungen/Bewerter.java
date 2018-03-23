@@ -11,6 +11,15 @@ public class Bewerter {
 	 * besten Wertes.
 	 **/
 	final int anzahlBewertungen = 8;
+	final int[] besterWert = new int[anzahlBewertungen];
+	final int[] schlechtesterWert = new int[anzahlBewertungen];
+	
+	public Bewerter() {
+		for (int i = 0; i < this.besterWert.length; i++) {
+			this.besterWert[i] = Integer.MAX_VALUE;
+			this.schlechtesterWert[i] = Integer.MIN_VALUE;
+		}
+	}
 
 	int[] bewerten(final Spielzustand zustand) {
 		final Roboter wir = zustand.roboter[0];
@@ -55,22 +64,6 @@ public class Bewerter {
 
 	int[] schlechteres(final int[] a, final int[] b) {
 		return istBesser(b, a) ? a : b;
-	}
-
-	int[] besterWert() {
-		final int[] result = new int[anzahlBewertungen];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = Integer.MAX_VALUE;
-		}
-		return result;
-	}
-
-	int[] schlechtesterWert() {
-		final int[] result = new int[anzahlBewertungen];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = Integer.MIN_VALUE;
-		}
-		return result;
 	}
 
 }

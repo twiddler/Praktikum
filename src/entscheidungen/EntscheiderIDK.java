@@ -15,12 +15,12 @@ public class EntscheiderIDK extends Entscheider {
 
 	Knoten wurzel;
 
-	public EntscheiderIDK (Bewerter bewerter) {
+	public EntscheiderIDK(Bewerter bewerter) {
 		super(bewerter);
 	}
 
 	int[] min_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
-		int[] result = bewerter.besterWert();
+		int[] result = bewerter.besterWert;
 
 		for (Karte karte : knoten.zustand.roboter[1].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 			if (karte.prioritaet < prioritaet) {
@@ -46,7 +46,7 @@ public class EntscheiderIDK extends Entscheider {
 	}
 
 	int[] max_value(Knoten knoten, int tiefe, int prioritaet, int[] alpha, int[] beta) {
-		int[] result = bewerter.schlechtesterWert();
+		int[] result = bewerter.schlechtesterWert;
 
 		for (Karte karte : knoten.zustand.roboter[0].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 			if (karte.prioritaet < prioritaet) {
@@ -72,24 +72,25 @@ public class EntscheiderIDK extends Entscheider {
 	}
 
 	int c = 0;
-	
+
 	int[] idk_value(Knoten knoten, int tiefe, int[] alpha, int[] beta) {
 		++c;
 		if (tiefe > 3) {
 			String t = "";
-			for (int i = 0; i < 5-tiefe; ++i) {
+			for (int i = 0; i < 5 - tiefe; ++i) {
 				t += " ";
 			}
 			t += tiefe;
-			System.out.println(c+". Runde idkvalue, Tiefe: "+t);
+			System.out.println(c + ". Runde idkvalue, Tiefe: " + t);
 		}
-		
+
 		if (tiefe == 0) {
 			return bewerter.bewerten(knoten.zustand);
 		}
 
 		int[] min_prioritaet = new int[2];
 		for (int i = 0; i < min_prioritaet.length; ++i) {
+			min_prioritaet[i] = Integer.MAX_VALUE;
 			for (Karte karte : knoten.zustand.roboter[i].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 				if (karte.prioritaet < min_prioritaet[i]) {
 					min_prioritaet[i] = karte.prioritaet;
@@ -105,7 +106,7 @@ public class EntscheiderIDK extends Entscheider {
 				if (karte.prioritaet > min_prioritaet[(i + 1) % 2]) {
 					Knoten kind = knoten.kindMitKarte(i, karte);
 					kind.bewertung = i == 0 ? min_value(kind, tiefe, karte.prioritaet, alpha, beta)
-							: max_value(kind, tiefe, karte.prioritaet, alpha, beta);
+							: max_value(kind, tiefe, karte.prioritaet, alpha, beta); // TODO Nicht "i == 1 ?"?
 					k.put(karte.prioritaet, kind);
 				}
 			}
@@ -117,14 +118,14 @@ public class EntscheiderIDK extends Entscheider {
 	}
 
 	/**
-	 * Aus zwei Listen von netten und blöden Kindern, jeweils aufsteigend
-	 * sortiert nach Priorität, bestimmt diese Funktion das Kind was sich
-	 * durchsetzt.
+	 * Aus zwei Listen von netten und blöden Kindern, jeweils aufsteigend sortiert
+	 * nach Priorität, bestimmt diese Funktion das Kind was sich durchsetzt.
 	 */
 	Knoten welchesKind(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
 
 		List<Knoten> vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder);
 
+		// TODO hier nicht sicher ob das nicht remove(0) sein müsste
 		Knoten result = vertreterListe.remove(vertreterListe.size() - 1);
 		while (!vertreterListe.isEmpty()) {
 			Knoten vergleich = vertreterListe.remove(vertreterListe.size() - 1);
@@ -139,39 +140,44 @@ public class EntscheiderIDK extends Entscheider {
 	}
 
 	/**
-	 * Wählt aus zwei nach aufsteigender Priorität sortierten Listen von netten
-	 * und blöden Kindern die vertretenden Kinder aus. Ist bspw. die nach
-	 * aufsteigender Priorität sortierte, vereinigte Liste [nett1, nett2, nett3,
-	 * blöd1, blöd2, nett4] mit den Bewertungen nett2 > nett1, nett2 > nett3,
-	 * blöd1 < blöd2, dann ist das Ergebnis dieser Funktion [nett2, blöd1,
-	 * nett4].
+	 * Wählt aus zwei nach aufsteigender Priorität sortierten Listen von netten und
+	 * blöden Kindern die vertretenden Kinder aus. Ist bspw. die nach aufsteigender
+	 * Priorität sortierte, vereinigte Liste [nett1, nett2, nett3, blöd1, blöd2,
+	 * nett4] mit den Bewertungen nett2 > nett1, nett2 > nett3, blöd1 < blöd2, dann
+	 * ist das Ergebnis dieser Funktion [nett2, blöd1, nett4].
 	 * 
 	 * Die übergebenen Listen werden von dieser Funktion verändert!
 	 */
 	List<Knoten> vertreterWaehlen(TreeMap<Integer, Knoten> netteKinder, TreeMap<Integer, Knoten> bloedeKinder) {
 
 		// Ist das schnellste Kind nett oder blöd?
-		boolean vertrittUns = netteKinder.lastEntry().getKey() > bloedeKinder.lastEntry().getKey();
-
-		if (vertrittUns) {
-			return vertreterWaehlen(netteKinder, bloedeKinder, vertrittUns);
+		assert !netteKinder.isEmpty() || !bloedeKinder.isEmpty();
+		boolean vertrittUns;
+		if (netteKinder.isEmpty()) {
+			vertrittUns = false;
+		} else if (bloedeKinder.isEmpty()) {
+			vertrittUns = true;
 		} else {
-			return vertreterWaehlen(bloedeKinder, netteKinder, vertrittUns);
+			vertrittUns = netteKinder.lastEntry().getKey() > bloedeKinder.lastEntry().getKey();
 		}
+
+		TreeMap<Integer, Knoten> entsender = vertrittUns ? netteKinder : bloedeKinder;
+		TreeMap<Integer, Knoten> limiter = vertrittUns ? bloedeKinder : netteKinder;
+		return vertreterWaehlen(entsender, limiter, vertrittUns);
 
 	}
 
 	/**
 	 * Sucht anhand des Elements mit höchster Priorität in limiter den bis dahin
-	 * zusammenhängenden Bereich in entsender. Je nachdem welche der beiden
-	 * Listen die netten oder blöden Kinder sind, wird eine andere
-	 * Bewertungsfunktion benutzt. Die Funktion ruft sich dann mit getauschten
-	 * Parametern selbst auf, bis die Liste leer ist.
+	 * zusammenhängenden Bereich in entsender. Je nachdem welche der beiden Listen
+	 * die netten oder blöden Kinder sind, wird eine andere Bewertungsfunktion
+	 * benutzt. Die Funktion ruft sich dann mit getauschten Parametern selbst auf,
+	 * bis die Liste leer ist.
 	 * 
 	 * @param entsender
 	 *            Aus den letzten Elementen dieser Liste, beschränkt durch das
-	 *            letzte Element aus limiter, wird das Element ausgewählt,
-	 *            welches die beste/schlechte Wertung hat.
+	 *            letzte Element aus limiter, wird das Element ausgewählt, welches
+	 *            die beste/schlechte Wertung hat.
 	 * @param limiter
 	 *            Das letzte Element dieser Liste limitiert die zu betrachtenden
 	 *            Werte aus entsender.
@@ -209,9 +215,9 @@ public class EntscheiderIDK extends Entscheider {
 	}
 
 	/**
-	 * Durchläuft von der Wurzel aus die Nachfolger im Spielbaum und gibt die
-	 * Karten aus, die auf diesem Weg gespielt wurden. Gesperrte Karten kommen
-	 * nicht ins Ergebnis.
+	 * Durchläuft von der Wurzel aus die Nachfolger im Spielbaum und gibt die Karten
+	 * aus, die auf diesem Weg gespielt wurden. Gesperrte Karten kommen nicht ins
+	 * Ergebnis.
 	 */
 	Karte[] zuSpielendeKarten() {
 
@@ -233,12 +239,12 @@ public class EntscheiderIDK extends Entscheider {
 	}
 
 	/**
-	 * Bestimmt von der Wurzel aus die Nachfolger, also die Spielzustände, die
-	 * bei rationalem Verhalten beider Spieler durchlaufen werden.
+	 * Bestimmt von der Wurzel aus die Nachfolger, also die Spielzustände, die bei
+	 * rationalem Verhalten beider Spieler durchlaufen werden.
 	 */
 	void zuegeAnalysieren() {
-		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE, this.bewerter.schlechtesterWert(),
-				this.bewerter.besterWert());
+		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE, this.bewerter.schlechtesterWert,
+				this.bewerter.besterWert);
 	}
 
 	/**

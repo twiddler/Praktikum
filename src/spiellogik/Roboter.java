@@ -155,21 +155,20 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	}
 
 	/**
-	 * Ermittelt welche Karten im Programmslot gespielt werden können. Bei vollem
-	 * Leben sind das alles, ansonsten müssen die gesperrten Karten betrachtet
-	 * werden.
+	 * Ermittelt welche Karten im Programmslot gespielt werden können. Je nach
+	 * Gesundheitspunkten müssen die gesperrten Karten betrachtet werden.
 	 */
 	public List<Karte> spielbareKarten(int slot) {
 		List<Karte> result;
-		int geblockteKarten = this.gesperrteKarten.size();
+		int gesperrteKarten = this.gesperrteKarten.size();
 		if (this.poweredDown || this.leben == 0) {
-			result = new ArrayList<Karte>();
+			result = new ArrayList<Karte>(1);
 			result.add(Karte.dummy);
-		} else if (Parameter.ZUEGE_PRO_RUNDE - slot > geblockteKarten) {
+		} else if (slot + gesperrteKarten < Parameter.ZUEGE_PRO_RUNDE) {
 			result = this.karten;
 		} else {
-			result = new ArrayList<Karte>();
-			result.add(this.gesperrteKarten.get(slot - geblockteKarten - 1));
+			result = new ArrayList<Karte>(1);
+			result.add(this.gesperrteKarten.get(slot + gesperrteKarten - Parameter.ZUEGE_PRO_RUNDE));
 		}
 		return result;
 	}

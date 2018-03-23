@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import entscheidungen.Bewerter;
 import entscheidungen.Bieter;
 import entscheidungen.Entscheider;
-import entscheidungen.EntscheiderMDFFMN;
+import entscheidungen.EntscheiderIDK;
 import spiellogik.Karte;
 import spiellogik.Spielzustand;
 
@@ -66,7 +66,7 @@ class Client {
 			// Testeinstellungen
 			host = "localhost";
 			port = 9911;
-			
+
 			System.out.print("Spiel-ID eingeben: ");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			spielID = Long.parseLong(reader.readLine());
@@ -88,7 +88,7 @@ class Client {
 			System.out.println("Eingeloggt in Spiel " + spielID + " als Spieler " + spielerID);
 
 			// Auf alle Spieler warten, dann ersten Spielzustand erhalten
-			final Entscheider entscheider = new EntscheiderMDFFMN(new Bewerter());
+			final Entscheider entscheider = new EntscheiderIDK(new Bewerter());
 			final JSONObject ersteRunde = naechsteNachricht(in);
 			Spielzustand zustand = Parser.ersteRunde(ersteRunde, spielerID);
 			List<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));
@@ -137,14 +137,15 @@ class Client {
 	}
 
 	private static JSONObject login() {
-		final JSONObject json = new JSONObject();
-		final JSONObject loginJSON = new JSONObject();
-		loginJSON.put("team", TEAM);
-		loginJSON.put("pw", PASSWORT);
-		json.put("login", loginJSON);
-		json.put("spielbeitritt", spielID);
-		json.put("spielerID", 0);
-		return json;
+		final JSONObject result = new JSONObject();
+		final JSONObject logindaten = new JSONObject();
+		logindaten.put("team", TEAM);
+		logindaten.put("pw", PASSWORT);
+		result.put("login", logindaten);
+		result.put("spielbeitritt", spielID);
+		result.put("spielerID", 0);
+
+		return result;
 	}
 
 	private static String datenVerpacken(final JSONObject daten) {
