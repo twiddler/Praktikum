@@ -29,6 +29,7 @@ import spiellogik.Zusatz;
 public class Parser {
 
 	static final int spielerID = 0;
+	static final int Ringe = 8;
 
 	/**
 	 * Das Kartendeck als Kartenobjekte. Wird einmal abgespeichert und danach zum
@@ -304,11 +305,12 @@ public class Parser {
 	}
 
 	static int[][] nachbarListe() {
-		final int[][] ret = new int[127][6];
+		int felder = 3 * Ringe * (Ringe - 1) + 1;
+		final int[][] ret = new int[felder][6];
 		for (int i = 0; i < 6; i++) {
 			setzeNachbarn(0, i + 1, i, ret);
 		}
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < Ringe - 1; i++) {
 			int pS = 0;
 			int pT = 6 * (i + 2) - 1;
 			int sInd = getIndexNr(i, pS);
@@ -340,7 +342,7 @@ public class Parser {
 
 	static int getIndexNr(final int ring, final int stelle) {
 		final int s = stelle % ((ring + 1) * 6);
-		if (ring != 6) {
+		if (ring < Ringe - 1) {
 			return 3 * ring * (ring + 1) + s + 1;
 		} else {
 			return letzterRing(s);
@@ -348,21 +350,22 @@ public class Parser {
 	}
 
 	static int letzterRing(final int s) {
-		final int ret[] = new int[42];
+		int felder = Ringe * 6;
+		final int ret[] = new int[felder];
 		int p = 1;
-		int t = 24;
+		int t = (Ringe - 1) * 4;
 		for (int i = 0; i < 6; i++) {
-			for (int j = 0; j < 7; j++) {
-				ret[p] = getIndexNr(5, t);
+			for (int j = 0; j < Ringe; j++) {
+				ret[p] = getIndexNr(Ringe - 2, t);
 				p++;
-				p %= 42;
+				p %= felder;
 				t--;
 				if (t < 0) {
-					t = 35;
+					t = (Ringe - 1) * 6 - 1;
 				}
 			}
-			t += 13;
-			t %= 36;
+			t += ((2 * (Ringe - 1)) + 1);
+			t %= (6 * (Ringe - 1));
 		}
 		return ret[s];
 	}
