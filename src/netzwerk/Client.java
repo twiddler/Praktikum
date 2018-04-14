@@ -96,7 +96,7 @@ class Client {
 			while (true) {
 
 				// -> Gebote schicken
-				final JSONObject gebote = Serialisierer.gebote(Bieter.gebote(zustand, bietoptionen));
+				final JSONObject gebote = Serialisierer.gebote(Bieter.gebote(zustand, bietoptionen, entscheider));
 				out.println(datenVerpacken(gebote));
 
 				// <- Auktionsergebnis

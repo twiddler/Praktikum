@@ -5,6 +5,7 @@ import java.util.List;
 
 import spiellogik.Karte;
 import spiellogik.Parameter;
+import spiellogik.Roboter;
 import spiellogik.Spielzustand;
 
 public class EntscheiderMDFFMN extends Entscheider {
@@ -71,7 +72,8 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 	@Override
 	public boolean powerdown(Spielzustand zustand) {
-		return false;
+		if(zustand.roboter[0].gesundheit <4) return true;
+		else return false;
 	}
 
 }

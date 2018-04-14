@@ -22,7 +22,9 @@ public class EntscheiderRandom extends Entscheider {
 
 	@Override
 	public boolean powerdown(final Spielzustand zustand) {
-		return false;
+		int temp = (int)(Math.random() * 2);
+		if(temp == 1) return true;
+		else return false;
 	}
 
 }
