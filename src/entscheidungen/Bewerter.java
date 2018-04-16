@@ -4,16 +4,24 @@ import spiellogik.Parameter;
 import spiellogik.Roboter;
 import spiellogik.Spielzustand;
 
+/**
+ * Stellt Bewertungstupel zum Bewerten von Spielzuständen bereit. Hier wird auch
+ * eingestellt, wie bewertet wird, z.B. "Haben wir gewonnen?", "Wieviele Flaggen
+ * müssen wir noch einsammeln?", usw..
+ * 
+ * @author xXx Players xXx
+ * 
+ */
 public class Bewerter {
 
 	/**
 	 * Länge der Bewertungstupel. Nötig für die Generierung des schlechtesten und
 	 * besten Wertes.
 	 **/
-	final int anzahlBewertungen = 8;
+	final int anzahlBewertungen = 10;
 	final int[] besterWert = new int[anzahlBewertungen];
 	final int[] schlechtesterWert = new int[anzahlBewertungen];
-	
+
 	public Bewerter() {
 		for (int i = 0; i < this.besterWert.length; i++) {
 			this.besterWert[i] = Integer.MAX_VALUE;
@@ -33,13 +41,12 @@ public class Bewerter {
 		final int gegnerNaechsteFlagge = -gegner.naechsteFlagge;
 		final int unsereGesundheit = wir.gesundheit;
 		final int gegnerGesundheit = -gegner.gesundheit;
-		// int unserAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(0);
-		// int gegnerAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(1);
+		final int unserAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(0);
+		final int gegnerAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(1);
 
 		return new int[] { wirGewinnen ? 1 : 0, gegnerGewinntNicht ? 1 : 0, wirLebenNoch ? 1 : 0,
 				gegnerLebtNichtMehr ? 1 : 0, unsereNaechsteFlagge, gegnerNaechsteFlagge, unsereGesundheit,
-				gegnerGesundheit };
-		// unserAbstandZurNaechstenFlagge, gegnerAbstandZurNaechstenFlagge };
+				gegnerGesundheit, unserAbstandZurNaechstenFlagge, gegnerAbstandZurNaechstenFlagge };
 	}
 
 	boolean istBesser(final int[] a, final int[] b) {

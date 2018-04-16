@@ -5,7 +5,6 @@ import java.util.List;
 
 import spiellogik.Karte;
 import spiellogik.Parameter;
-import spiellogik.Roboter;
 import spiellogik.Spielzustand;
 
 public class EntscheiderMDFFMN extends Entscheider {
@@ -17,7 +16,7 @@ public class EntscheiderMDFFMN extends Entscheider {
 	@Override
 	public Karte[] entscheiden(final Spielzustand zustand) {
 		int freieSlots = Math.min(zustand.roboter[0].gesundheit - 1, Parameter.ZUEGE_PRO_RUNDE);
-		List<ArrayList<Karte>> per = allPermutationsof(freieSlots, zustand.roboter[0].karten);
+		List<ArrayList<Karte>> per = allPermutationsOf(freieSlots, zustand.roboter[0].karten);
 		List<Karte> bestOne = new ArrayList<>();
 		int[] bestBewertung = bewerter.schlechtesterWert;
 		for (List<Karte> aktuell : per) {
@@ -43,7 +42,7 @@ public class EntscheiderMDFFMN extends Entscheider {
 		return result;
 	}
 
-	public List<ArrayList<Karte>> allPermutationsof(int tiefe, List<Karte> karten) {
+	public List<ArrayList<Karte>> allPermutationsOf(int tiefe, List<Karte> karten) {
 		List<ArrayList<Karte>> result = new ArrayList<>();
 		if (tiefe == 0) {
 			return result;
@@ -55,7 +54,7 @@ public class EntscheiderMDFFMN extends Entscheider {
 				result.add(newList);
 			}
 		} else {
-			List<ArrayList<Karte>> nextLayer = allPermutationsof(tiefe - 1, karten);
+			List<ArrayList<Karte>> nextLayer = allPermutationsOf(tiefe - 1, karten);
 			for (ArrayList<Karte> list : nextLayer) {
 				for (Karte k : karten) {
 					ArrayList<Karte> newList = (ArrayList<Karte>) list.clone();
@@ -72,8 +71,7 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 	@Override
 	public boolean powerdown(Spielzustand zustand) {
-		if(zustand.roboter[0].gesundheit <4) return true;
-		else return false;
+		return zustand.roboter[0].gesundheit < Parameter.MAX_GESUNDHEIT * 0.4;
 	}
 
 }

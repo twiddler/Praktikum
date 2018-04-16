@@ -3,6 +3,12 @@ package entscheidungen;
 import spiellogik.Karte;
 import spiellogik.Spielzustand;
 
+/**
+ * Ein Knoten in einem Spielbaum.
+ * 
+ * @author xXx Players xXx
+ * 
+ */
 class Knoten {
 
 	Spielzustand zustand;

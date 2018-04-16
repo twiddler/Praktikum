@@ -7,6 +7,13 @@ import org.json.JSONObject;
 
 import spiellogik.Karte;
 
+/**
+ * Nimmt an den Server zu sendende Objekte entgegen und gibt dem Protokoll
+ * entsprechende JSONObjects zurück.
+ * 
+ * @author xXx Players xXx
+ * 
+ */
 public final class Serialisierer {
 
 	public static JSONObject programm(final Karte[] karten) {

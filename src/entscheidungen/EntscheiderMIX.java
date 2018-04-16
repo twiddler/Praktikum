@@ -11,11 +11,23 @@ import spiellogik.Parameter;
 import spiellogik.Roboter;
 import spiellogik.Spielzustand;
 
-public class EntscheiderIDK extends Entscheider {
+/**
+ * Ähnlich wie Minimax, allerdings nur auf jeder zweiten Ebene, da aufgrund der
+ * Prioritäten von Karten auf den anderen Ebenen beide Spieler betrachtet werden
+ * müssen. Würde bspw. Spieler 1 die höchste Karte spielen, müssten danach nur
+ * noch Karten von Spieler 2 betrachtet werden.
+ * 
+ * (Die Laufzeit dieses Algorithmus ist leider zu schlecht. Mit 9 Karten in
+ * jeder Hand und 5 Zügen benötigten wir 4,5 min.)
+ * 
+ * @author xXx Players xXx
+ * 
+ */
+public class EntscheiderMIX extends Entscheider {
 
 	Knoten wurzel;
 
-	public EntscheiderIDK(Bewerter bewerter) {
+	public EntscheiderMIX(Bewerter bewerter) {
 		super(bewerter);
 	}
 
@@ -25,7 +37,7 @@ public class EntscheiderIDK extends Entscheider {
 		for (Karte karte : knoten.zustand.roboter[1].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(1, karte);
-				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
+				kind.bewertung = mix_value(kind, tiefe - 1, alpha, beta);
 
 				if (bewerter.istSchlechter(kind.bewertung, result)) {
 					knoten.nachfolger = kind;
@@ -51,7 +63,7 @@ public class EntscheiderIDK extends Entscheider {
 		for (Karte karte : knoten.zustand.roboter[0].spielbareKarten(Parameter.ZUEGE_PRO_RUNDE - tiefe)) {
 			if (karte.prioritaet < prioritaet) {
 				Knoten kind = knoten.kindMitKarte(0, karte);
-				kind.bewertung = idk_value(kind, tiefe - 1, alpha, beta);
+				kind.bewertung = mix_value(kind, tiefe - 1, alpha, beta);
 
 				if (bewerter.istBesser(kind.bewertung, result)) {
 					knoten.nachfolger = kind;
@@ -71,23 +83,26 @@ public class EntscheiderIDK extends Entscheider {
 		return result;
 	}
 
-	int c = 0;
+	// int iterationen = 0;
 
-	int[] idk_value(Knoten knoten, int tiefe, int[] alpha, int[] beta) {
-		++c;
-		if (tiefe > 3) {
-			String t = "";
-			for (int i = 0; i < 5 - tiefe; ++i) {
-				t += " ";
-			}
-			t += tiefe;
-			System.out.println(c + ". Runde idkvalue, Tiefe: " + t);
-		}
+	int[] mix_value(Knoten knoten, int tiefe, int[] alpha, int[] beta) {
+
+		// Nur zum Abschätzen wie lange das Programm noch läuft
+		// ++iterationen;
+		// if (tiefe > 3) {
+		// String t = "";
+		// for (int i = 0; i < 5 - tiefe; ++i) {
+		// t += " ";
+		// }
+		// t += tiefe;
+		// System.out.println(iterationen + ". Runde idkvalue, Tiefe: " + t);
+		// }
 
 		if (tiefe == 0) {
 			return bewerter.bewerten(knoten.zustand);
 		}
 
+		// Die jeweils kleinste Priorität der Handkarten beider Spieler bestimmen
 		int[] min_prioritaet = new int[2];
 		for (int i = 0; i < min_prioritaet.length; ++i) {
 			min_prioritaet[i] = Integer.MAX_VALUE;
@@ -106,7 +121,7 @@ public class EntscheiderIDK extends Entscheider {
 				if (karte.prioritaet > min_prioritaet[(i + 1) % 2]) {
 					Knoten kind = knoten.kindMitKarte(i, karte);
 					kind.bewertung = i == 0 ? min_value(kind, tiefe, karte.prioritaet, alpha, beta)
-							: max_value(kind, tiefe, karte.prioritaet, alpha, beta); // TODO Nicht "i == 1 ?"?
+							: max_value(kind, tiefe, karte.prioritaet, alpha, beta);
 					k.put(karte.prioritaet, kind);
 				}
 			}
@@ -125,7 +140,6 @@ public class EntscheiderIDK extends Entscheider {
 
 		List<Knoten> vertreterListe = vertreterWaehlen(netteKinder, bloedeKinder);
 
-		// TODO hier nicht sicher ob das nicht remove(0) sein müsste
 		Knoten result = vertreterListe.remove(vertreterListe.size() - 1);
 		while (!vertreterListe.isEmpty()) {
 			Knoten vergleich = vertreterListe.remove(vertreterListe.size() - 1);
@@ -243,7 +257,7 @@ public class EntscheiderIDK extends Entscheider {
 	 * rationalem Verhalten beider Spieler durchlaufen werden.
 	 */
 	void zuegeAnalysieren() {
-		this.idk_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE, this.bewerter.schlechtesterWert,
+		this.mix_value(this.wurzel, Parameter.ZUEGE_PRO_RUNDE, this.bewerter.schlechtesterWert,
 				this.bewerter.besterWert);
 	}
 
@@ -260,7 +274,11 @@ public class EntscheiderIDK extends Entscheider {
 
 	@Override
 	public boolean powerdown(Spielzustand zustand) {
-		// TODO: Hier vielleicht noch was etwas komplizierteres
-		return false;
+		// Hier wäre es cool gewesen den Effekt des Powerdowns auf den nächsten Zug
+		// abzuschätzen. Mit einer leeren Karte hätte das implementierbar sein müssen,
+		// allerdings wäre die Vorhersage was der Gegner tun würde sehr spekulativ
+		// geworden. Deshalb hier nach längerem Diskutieren eine etwas einfachere Regel.
+		// ;)
+		return zustand.roboter[0].gesundheit < Parameter.MAX_GESUNDHEIT * 0.4;
 	}
 }

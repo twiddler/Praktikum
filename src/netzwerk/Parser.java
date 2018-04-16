@@ -26,10 +26,15 @@ import spiellogik.Spielzustand;
 import spiellogik.Zahltag;
 import spiellogik.Zusatz;
 
+/**
+ * Erzeugt aus vom Server empfangenen JSONObjects die Spiellogikobjekte.
+ * 
+ * @author xXx Players xXx
+ * 
+ */
 public class Parser {
 
 	static final int spielerID = 0;
-	static final int Ringe = 8;
 
 	/**
 	 * Das Kartendeck als Kartenobjekte. Wird einmal abgespeichert und danach zum
@@ -305,12 +310,12 @@ public class Parser {
 	}
 
 	static int[][] nachbarListe() {
-		int felder = 3 * Ringe * (Ringe - 1) + 1;
+		int felder = 3 * Parameter.ANZAHL_SPIELFELDRINGE * (Parameter.ANZAHL_SPIELFELDRINGE - 1) + 1;
 		final int[][] ret = new int[felder][6];
 		for (int i = 0; i < 6; i++) {
 			setzeNachbarn(0, i + 1, i, ret);
 		}
-		for (int i = 0; i < Ringe - 1; i++) {
+		for (int i = 0; i < Parameter.ANZAHL_SPIELFELDRINGE - 1; i++) {
 			int pS = 0;
 			int pT = 6 * (i + 2) - 1;
 			int sInd = getIndexNr(i, pS);
@@ -342,7 +347,7 @@ public class Parser {
 
 	static int getIndexNr(final int ring, final int stelle) {
 		final int s = stelle % ((ring + 1) * 6);
-		if (ring < Ringe - 1) {
+		if (ring < Parameter.ANZAHL_SPIELFELDRINGE - 1) {
 			return 3 * ring * (ring + 1) + s + 1;
 		} else {
 			return letzterRing(s);
@@ -350,22 +355,22 @@ public class Parser {
 	}
 
 	static int letzterRing(final int s) {
-		int felder = Ringe * 6;
+		int felder = Parameter.ANZAHL_SPIELFELDRINGE * 6;
 		final int ret[] = new int[felder];
 		int p = 1;
-		int t = (Ringe - 1) * 4;
+		int t = (Parameter.ANZAHL_SPIELFELDRINGE - 1) * 4;
 		for (int i = 0; i < 6; i++) {
-			for (int j = 0; j < Ringe; j++) {
-				ret[p] = getIndexNr(Ringe - 2, t);
+			for (int j = 0; j < Parameter.ANZAHL_SPIELFELDRINGE; j++) {
+				ret[p] = getIndexNr(Parameter.ANZAHL_SPIELFELDRINGE - 2, t);
 				p++;
 				p %= felder;
 				t--;
 				if (t < 0) {
-					t = (Ringe - 1) * 6 - 1;
+					t = (Parameter.ANZAHL_SPIELFELDRINGE - 1) * 6 - 1;
 				}
 			}
-			t += ((2 * (Ringe - 1)) + 1);
-			t %= (6 * (Ringe - 1));
+			t += ((2 * (Parameter.ANZAHL_SPIELFELDRINGE - 1)) + 1);
+			t %= (6 * (Parameter.ANZAHL_SPIELFELDRINGE - 1));
 		}
 		return ret[s];
 	}

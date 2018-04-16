@@ -19,10 +19,16 @@ import org.json.JSONObject;
 import entscheidungen.Bewerter;
 import entscheidungen.Bieter;
 import entscheidungen.Entscheider;
-import entscheidungen.EntscheiderIDK;
+import entscheidungen.EntscheiderMDFFMN;
 import spiellogik.Karte;
 import spiellogik.Spielzustand;
 
+/**
+ * Einstiegsklasse in das Programm. Behandelt den Login und den Spielfluss.
+ * 
+ * @author xXx Players xXx
+ * 
+ */
 class Client {
 
 	// Per Kommandozeile übergebene Parameter
@@ -36,7 +42,7 @@ class Client {
 
 	public static void main(final String[] args) throws IOException {
 
-		if (args.length == 3) {
+		if (args.length == 2*3) {
 			// Kommandozeilenparameter parsen
 			Options options = new Options();
 			Option[] os = { new Option("r", "remote", true, "IPv4 des Spielservers"),
@@ -88,11 +94,13 @@ class Client {
 			System.out.println("Eingeloggt in Spiel " + spielID + " als Spieler " + spielerID);
 
 			// Auf alle Spieler warten, dann ersten Spielzustand erhalten
-			final Entscheider entscheider = new EntscheiderIDK(new Bewerter());
+			final Entscheider entscheider = new EntscheiderMDFFMN(new Bewerter());
 			final JSONObject ersteRunde = naechsteNachricht(in);
 			Spielzustand zustand = Parser.ersteRunde(ersteRunde, spielerID);
 			List<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));
 
+			boolean powereddown = false;
+			
 			while (true) {
 
 				// -> Gebote schicken
@@ -105,14 +113,15 @@ class Client {
 
 				// -> Programm
 				zustand.handkartenSortieren();
-				final JSONObject programm = Serialisierer.programm(entscheider.entscheiden(zustand));
+				final JSONObject programm = Serialisierer.programm(powereddown ? new Karte[0] : entscheider.entscheiden(zustand));
 				out.println(datenVerpacken(programm));
 
 				// <- Gespielte Runde (Programme, ..., Sieger)
 				zustand = Parser.nteRunde(naechsteNachricht(in), spielerID, zustand);
 
 				// -> Powerdown? (nein, obv)
-				out.println(datenVerpacken(Serialisierer.powerdown(entscheider.powerdown(zustand))));
+				powereddown = entscheider.powerdown(zustand);
+				out.println(datenVerpacken(Serialisierer.powerdown(powereddown)));
 
 				// <- Powerdowns, Handkarten, Bietbares
 				final JSONObject naechsteRunde = naechsteNachricht(in);
