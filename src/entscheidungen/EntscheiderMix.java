@@ -23,11 +23,11 @@ import spiellogik.Spielzustand;
  * @author xXx Players xXx
  * 
  */
-public class EntscheiderMIX extends Entscheider {
+public class EntscheiderMix extends Entscheider {
 
 	Knoten wurzel;
 
-	public EntscheiderMIX(Bewerter bewerter) {
+	public EntscheiderMix(Bewerter bewerter) {
 		super(bewerter);
 	}
 

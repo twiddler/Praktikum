@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 import org.junit.Test;
 
-public class EntscheiderMIXTest {
+public class EntscheiderMixTest {
 
 	/**
 	 * Testet, ob aus einer Liste von Vertretern das richtige Kind genommen wird. In
@@ -17,7 +17,7 @@ public class EntscheiderMIXTest {
 	public void welchesKindTest(TreeMap<Integer, Integer> n, TreeMap<Integer, Integer> b, int bewertung1Soll) {
 
 		// Aus o.g. Testdaten Knoten bauen
-		EntscheiderMIX entscheider = new EntscheiderMIX(new Bewerter());
+		EntscheiderMix entscheider = new EntscheiderMix(new Bewerter());
 		TreeMap<Integer, Knoten> netteKinder = new TreeMap<>();
 		while (!n.isEmpty()) {
 			Map.Entry<Integer, Integer> pb = n.pollLastEntry();
