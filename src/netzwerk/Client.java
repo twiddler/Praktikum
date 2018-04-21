@@ -34,6 +34,7 @@ class Client {
 	// Per Kommandozeile übergebene Parameter
 	static String host;
 	static int port;
+	static Integer localPort;
 	static long spielID;
 	static int spielerID;
 
@@ -66,12 +67,13 @@ class Client {
 				return;
 			}
 			host = cmd.getOptionValue("remote").split(":")[0];
-			port = Integer.parseInt(cmd.getOptionValue("localPort").split(" ")[0]);
+			port = Integer.parseInt(cmd.getOptionValue("remote").split(":")[1]);
+			localPort = Integer.parseInt(cmd.getOptionValues("localPort")[0]);
 			spielID = Long.parseLong(cmd.getOptionValue("spielID"));
 		} else {
 			// Testeinstellungen
-			host = "localhost";
-			port = 9911;
+			host = "praktss.acamar.uberspace.de";
+			port = 61064;
 
 			System.out.print("Spiel-ID eingeben: ");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -81,7 +83,7 @@ class Client {
 		try {
 			// Sockets erstellen
 			@SuppressWarnings("resource")
-			final Socket socket = new Socket(host, port);
+			final Socket socket = localPort == null ? new Socket(host, port) : new Socket(host, port, null, localPort);
 			final PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			final BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -100,7 +102,7 @@ class Client {
 			List<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));
 
 			boolean powereddown = false;
-			
+
 			while (true) {
 
 				// -> Gebote schicken
@@ -113,7 +115,8 @@ class Client {
 
 				// -> Programm
 				zustand.handkartenSortieren();
-				final JSONObject programm = Serialisierer.programm(powereddown ? new Karte[0] : entscheider.entscheiden(zustand));
+				final JSONObject programm = Serialisierer
+						.programm(powereddown ? new Karte[0] : entscheider.entscheiden(zustand));
 				out.println(datenVerpacken(programm));
 
 				// <- Gespielte Runde (Programme, ..., Sieger)
