@@ -42,7 +42,7 @@ class Client {
 
 	public static void main(final String[] args) throws IOException {
 
-		if (args.length == 2*3) {
+		if (args.length == 7) {
 			// Kommandozeilenparameter parsen
 			Options options = new Options();
 			Option[] os = { new Option("r", "remote", true, "IPv4 des Spielservers"),
@@ -65,7 +65,7 @@ class Client {
 				System.exit(1);
 				return;
 			}
-			host = cmd.getOptionValue("remote");
+			host = cmd.getOptionValue("remote").split(":")[0];
 			port = Integer.parseInt(cmd.getOptionValue("localPort").split(" ")[0]);
 			spielID = Long.parseLong(cmd.getOptionValue("spielID"));
 		} else {

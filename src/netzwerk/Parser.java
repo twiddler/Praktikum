@@ -278,6 +278,7 @@ public class Parser {
 
 		final Roboter[] roboter = roboterParsen(json.getInt("startgeld"), json.getJSONArray("spieler"),
 				json.getJSONArray("roboter"), unsereID);
+		Parameter.ANZAHL_SPIELFELDRINGE = (int) (1d / 2 + Math.sqrt(1d / 4 + (json.getJSONArray("spielbrett").length() - 1) / 3));
 		final Feld[] felder = felderParsen(json.getJSONArray("spielbrett"));
 		final Flagge[] flaggen = flaggenParsen(json.getJSONArray("spielbrett"));
 
