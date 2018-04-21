@@ -290,7 +290,7 @@ public class Parser {
 			deck.addAll(r.karten);
 		}
 
-		return new Spielzustand(roboter, felder, 0, flaggen);
+		return new Spielzustand(roboter, felder, flaggen);
 
 	}
 
@@ -301,7 +301,7 @@ public class Parser {
 		final Feld[] felder = felderParsen(json.getJSONArray("spielbrett"));
 		final Flagge[] flaggen = flaggenParsen(json.getJSONArray("spielbrett"));
 
-		return new Spielzustand(roboter, felder, 0, flaggen);
+		return new Spielzustand(roboter, felder, flaggen);
 
 	}
 

@@ -10,7 +10,7 @@ public final class Presse extends Zusatz {
 
 	@Override
 	void ausfuehren(final int position, final Spielzustand zustand) {
-		if (aktivInZuegen[zustand.zug]) {
+		if (aktivInZuegen[zustand.wievielterZug()]) {
 			for (final Roboter r : zustand.roboter) {
 				if (r.stehtAufPosition(position)) {
 					r.zerstoeren(zustand);

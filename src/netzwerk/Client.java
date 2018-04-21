@@ -72,8 +72,8 @@ class Client {
 			spielID = Long.parseLong(cmd.getOptionValue("spielID"));
 		} else {
 			// Testeinstellungen
-			host = "praktss.acamar.uberspace.de";
-			port = 61064;
+			host = "localhost"; // "praktss.acamar.uberspace.de";
+			port = 9911; // 61064;
 
 			System.out.print("Spiel-ID eingeben: ");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

@@ -27,9 +27,11 @@ public class Spielzustand implements Cloneable {
 	Flagge[] flaggen;
 
 	/**
-	 * Der wievielte Zug einer Runde es gerade ist.
+	 * Wieviele Karten schon gespielt wurden. Wird benutzt um zu bestimmen der
+	 * wievielte Zug in einer Runde es ist, und ob nach einer Karte die gespielt
+	 * wird ein Zug (aus 2 gespielten Karten) abgeschlossen ist.
 	 */
-	int zug;
+	int gespielteKarten = 0;
 
 	/**
 	 * Indizes der Felder, in Reihenfolge der Ausführung: Aixpresslaufbänder,
@@ -50,10 +52,9 @@ public class Spielzustand implements Cloneable {
 	 */
 	public static int[] positionenMitLasern;
 
-	public Spielzustand(final Roboter[] roboter, final Feld[] felder, final int zug, Flagge[] flaggen) {
+	public Spielzustand(final Roboter[] roboter, final Feld[] felder, Flagge[] flaggen) {
 		this.roboter = roboter;
 		this.felder = felder;
-		this.zug = zug;
 		this.flaggen = flaggen;
 	}
 
@@ -97,6 +98,11 @@ public class Spielzustand implements Cloneable {
 			result.feldAufPosition(roboter.position).drehen(karte.drehung_feld, result.roboter);
 		}
 		roboter.karten.remove(karte);
+
+		++result.gespielteKarten;
+		if (result.gespielteKarten % 2 == 0) {
+			result.zugBeenden();
+		}
 
 		return result;
 	}
@@ -157,16 +163,16 @@ public class Spielzustand implements Cloneable {
 		}
 	}
 
-	Spielzustand zugBeenden() {
-		final Spielzustand result = this.clone();
-
-		result.feldaktionenAusfuehren();
-		result.roboterlaserFeuern();
-		result.flaggenBeruehren();
-		result.respawns();
-		++result.zug;
-
-		return result;
+	/**
+	 * Führt alle Aktionen aus, die am Ende eines Zuges gemacht werden.
+	 * 
+	 * Achtung: Klont den Spielzustand nicht, sondern arbeitet auf sich selbst!
+	 */
+	void zugBeenden() {
+		this.feldaktionenAusfuehren();
+		this.roboterlaserFeuern();
+		this.flaggenBeruehren();
+		this.respawns();
 	}
 
 	/**
@@ -176,8 +182,12 @@ public class Spielzustand implements Cloneable {
 		return this.felder[position];
 	}
 
+	public int wievielterZug() {
+		return this.gespielteKarten / 2;
+	}
+	
 	boolean istLetzterZug() {
-		return this.zug == Parameter.ZUEGE_PRO_RUNDE - 1;
+		return this.wievielterZug() == Parameter.ZUEGE_PRO_RUNDE - 1;
 	}
 
 	/**
