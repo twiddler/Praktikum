@@ -9,24 +9,27 @@ import spiellogik.Spielzustand;
 
 public class EntscheiderMDFFMN extends Entscheider {
 
-	public final long maximaleAnzahl = (long) (3E9 * 100);
-	public long letzteAnzahl = 0;
-
 	public EntscheiderMDFFMN(Bewerter bewerter) {
 		super(bewerter);
 	}
 
 	@Override
 	public Karte[] entscheiden(final Spielzustand zustand) {
+		long start = System.nanoTime();
+		long ende = start + 58L * 1000000000L;
 		List<Karte> bestePermutation = new ArrayList<>();
 		int[] besteBewertung = this.bewerter.schlechtesterWert;
 
 		final int freieSlots = Math.min(zustand.roboter[0].gesundheit - 1, Parameter.ZUEGE_PRO_RUNDE);
 		final List<ArrayList<Karte>> permutationen = permutationenIterativ(freieSlots, zustand.roboter[0].karten);
+
 		for (final List<Karte> permutation : permutationen) {
+			if (System.nanoTime() >= ende)
+				break;
 			Spielzustand zustandMitPermutation = zustand;
 			for (int i = 0; i < Parameter.ZUEGE_PRO_RUNDE; ++i) {
-				// Die dummy-Karte muss gespielt werden, da karteSpielen() nach jeder 2ten Karte
+				// Die dummy-Karte muss gespielt werden, da karteSpielen() nach
+				// jeder 2ten Karte
 				// den Zug beendet (Aktionsfelder, ...)
 				zustandMitPermutation = zustand
 						.karteSpielen(0,
@@ -85,11 +88,8 @@ public class EntscheiderMDFFMN extends Entscheider {
 		for (int i = 1; i < laenge; ++i) {
 			List<ArrayList<Karte>> erweitertePermutationen = new ArrayList<>();
 
-			outerloop: for (ArrayList<Karte> permutation : result) {
+			for (ArrayList<Karte> permutation : result) {
 				for (final Karte karte : karten) {
-					if (erweitertePermutationen.size() >= (int) Math.pow(this.maximaleAnzahl, laenge - i)) {
-						break outerloop;
-					}
 					if (!permutation.contains(karte)) {
 						ArrayList<Karte> erweitertePermutation = (ArrayList<Karte>) permutation.clone();
 						erweitertePermutation.add(karte);
@@ -100,8 +100,6 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 			result = erweitertePermutationen;
 		}
-
-		this.letzteAnzahl = result.size();
 		return result;
 	}
 

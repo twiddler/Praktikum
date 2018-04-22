@@ -120,18 +120,9 @@ class Client {
 
 				// -> Programm
 				zustand.handkartenSortieren();
-				long start = System.nanoTime();
 				final JSONObject programm = Serialisierer
 						.programm(powereddown ? new Karte[0] : entscheider.entscheiden(zustand));
 				out.println(datenVerpacken(programm));
-				if (!powereddown) {
-					long ende = System.nanoTime();
-					double deltaS = ((double) (ende - start)) / 1000000000;
-					double permProS = ((double) entscheider.letzteAnzahl) / deltaS;
-					DecimalFormat format = new DecimalFormat("0.#E0");
-					System.out.println("Zeit [s], Permutationen, Perm./Zeit [/s], [/min]: " + format.format(deltaS)
-							+ ", " + entscheider.letzteAnzahl + ", " + format.format(permProS) + ", " + format.format(permProS * 60));
-				}
 
 				// <- Gespielte Runde (Programme, ..., Sieger)
 				zustand = Parser.nteRunde(naechsteNachricht(in), spielerID, zustand);
