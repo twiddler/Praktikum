@@ -16,16 +16,18 @@ public class EntscheiderMDFFMN extends Entscheider {
 	@Override
 	public Karte[] entscheiden(final Spielzustand zustand) {
 		long start = System.nanoTime();
-		long ende = start + 58L * 1000000000L;
+		long ende = start + 50L * 1000000000L;
+
 		List<Karte> bestePermutation = new ArrayList<>();
 		int[] besteBewertung = this.bewerter.schlechtesterWert;
 
 		final int freieSlots = Math.min(zustand.roboter[0].gesundheit - 1, Parameter.ZUEGE_PRO_RUNDE);
-		final List<ArrayList<Karte>> permutationen = permutationenIterativ(freieSlots, zustand.roboter[0].karten);
 
+		final List<ArrayList<Karte>> permutationen = permutationenIterativ(freieSlots, zustand.roboter[0].karten);
 		for (final List<Karte> permutation : permutationen) {
-			if (System.nanoTime() >= ende)
+			if (System.nanoTime() >= ende && !bestePermutation.isEmpty())
 				break;
+
 			Spielzustand zustandMitPermutation = zustand;
 			for (int i = 0; i < Parameter.ZUEGE_PRO_RUNDE; ++i) {
 				// Die dummy-Karte muss gespielt werden, da karteSpielen() nach
@@ -48,9 +50,18 @@ public class EntscheiderMDFFMN extends Entscheider {
 		for (int i = 0; i < bestePermutation.size(); i++) {
 			result[i] = bestePermutation.get(i);
 		}
+
+		for (int i = 0; i < besteBewertung.length; i++) {
+			System.out.print(besteBewertung[i] + ", ");
+		}
+		System.out.println();
+
 		return result;
 	}
 
+	/**
+	 * Berechnet für gegebene Karten alle Permutationen mit bestimmter Länge.
+	 */
 	public List<ArrayList<Karte>> permutationen(int tiefe, List<Karte> karten) {
 		List<ArrayList<Karte>> result = new ArrayList<>();
 		if (tiefe == 0) {
@@ -79,13 +90,9 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 		List<ArrayList<Karte>> result = new ArrayList<>();
 
-		for (final Karte karte : karten) {
-			ArrayList<Karte> permutation = new ArrayList<>();
-			permutation.add(karte);
-			result.add(permutation);
-		}
+		result.add(new ArrayList<>());
 
-		for (int i = 1; i < laenge; ++i) {
+		for (int i = 0; i < laenge; ++i) {
 			List<ArrayList<Karte>> erweitertePermutationen = new ArrayList<>();
 
 			for (ArrayList<Karte> permutation : result) {
@@ -100,7 +107,9 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 			result = erweitertePermutationen;
 		}
+		
 		return result;
+		
 	}
 
 	@Override

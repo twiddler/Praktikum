@@ -73,14 +73,15 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	 * soll er nicht mehr laufen.
 	 */
 	void laufen(final int schritte, final Spielzustand zustand) {
-		for (int i = 0; i < schritte; ++i) {
+		for (int i = 0; i < Math.abs(schritte); ++i) {
 			if (this.zerstoert()) {
 				return;
 			}
 
 			final Feld feld = zustand.feldAufPosition(this.position);
-			if (feld.verlassen(this, this.blickrichtung, zustand)) {
-				zustand.feldAufPosition(feld.nachbarn[this.blickrichtung]).betreten(this, zustand);
+			int richtung = (this.blickrichtung + (schritte < 0 ? 3 : 0)) % 6;
+			if (feld.verlassen(this, richtung, zustand)) {
+				zustand.feldAufPosition(feld.nachbarn[richtung]).betreten(this, zustand);
 			}
 		}
 	}
@@ -155,7 +156,7 @@ public final class Roboter extends Bewegbar implements Cloneable {
 			final Feld nachbar = zustand.feldAufPosition(feld.nachbarn[this.blickrichtung]);
 			if (feld.kanteInRichtung(this.blickrichtung).rauslaserbar()
 					&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
-				nachbar.durchlasern(this.blickrichtung, zustand, false);
+				nachbar.durchlasern(nachbar, this.blickrichtung, zustand, false);
 			}
 		}
 	}

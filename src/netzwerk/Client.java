@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.text.DecimalFormat;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -17,8 +16,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.json.JSONObject;
 
-import entscheidungen.Bewerter;
+import entscheidungen.BewerterEgozentrisch;
 import entscheidungen.Bieter;
+import entscheidungen.Entscheider;
 import entscheidungen.EntscheiderMDFFMN;
 import spiellogik.Karte;
 import spiellogik.Spielzustand;
@@ -72,7 +72,7 @@ class Client {
 			spielID = Long.parseLong(cmd.getOptionValue("spielID"));
 		} else {
 			// Testeinstellungen
-			if (true) {
+			if (false) {
 				host = "localhost";
 				port = 9911;
 			} else {
@@ -101,7 +101,7 @@ class Client {
 			System.out.println("Eingeloggt in Spiel " + spielID + " als Spieler " + spielerID);
 
 			// Auf alle Spieler warten, dann ersten Spielzustand erhalten
-			final EntscheiderMDFFMN entscheider = new EntscheiderMDFFMN(new Bewerter());
+			final Entscheider entscheider = new EntscheiderMDFFMN(new BewerterEgozentrisch());
 			final JSONObject ersteRunde = naechsteNachricht(in);
 			Spielzustand zustand = Parser.ersteRunde(ersteRunde, spielerID);
 			List<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));

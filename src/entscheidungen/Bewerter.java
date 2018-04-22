@@ -14,14 +14,16 @@ import spiellogik.Spielzustand;
 public class Bewerter {
 
 	/**
-	 * Länge der Bewertungstupel. Nötig für die Generierung des schlechtesten und
-	 * besten Wertes.
+	 * Länge der Bewertungstupel. Nötig für die Generierung des schlechtesten
+	 * und besten Wertes.
 	 **/
-	final int anzahlBewertungen = 10;
-	final int[] besterWert = new int[anzahlBewertungen];
-	final int[] schlechtesterWert = new int[anzahlBewertungen];
+	final int anzahlBewertungen = 12;
+	final int[] besterWert;
+	final int[] schlechtesterWert;
 
 	public Bewerter() {
+		besterWert = new int[anzahlBewertungen];
+		schlechtesterWert = new int[anzahlBewertungen];
 		for (int i = 0; i < this.besterWert.length; i++) {
 			this.besterWert[i] = Integer.MAX_VALUE;
 			this.schlechtesterWert[i] = Integer.MIN_VALUE;
@@ -38,14 +40,16 @@ public class Bewerter {
 		final boolean gegnerLebtNichtMehr = gegner.leben == 0;
 		final int unsereNaechsteFlagge = wir.naechsteFlagge;
 		final int gegnerNaechsteFlagge = -gegner.naechsteFlagge;
+		final int unserLeben = wir.leben;
+		final int gegnerLeben = -gegner.leben;
 		final int unsereGesundheit = wir.gesundheit;
 		final int gegnerGesundheit = -gegner.gesundheit;
-		final int unserAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(0);
+		final int unserAbstandZurNaechstenFlagge = -zustand.abstandZurNaechstenFlagge(0);
 		final int gegnerAbstandZurNaechstenFlagge = zustand.abstandZurNaechstenFlagge(1);
 
 		return new int[] { wirGewinnen ? 1 : 0, gegnerGewinntNicht ? 1 : 0, wirLebenNoch ? 1 : 0,
-				gegnerLebtNichtMehr ? 1 : 0, unsereNaechsteFlagge, gegnerNaechsteFlagge, unsereGesundheit,
-				gegnerGesundheit, unserAbstandZurNaechstenFlagge, gegnerAbstandZurNaechstenFlagge };
+				gegnerLebtNichtMehr ? 1 : 0, unsereNaechsteFlagge, gegnerNaechsteFlagge, unserLeben, gegnerLeben,
+				unsereGesundheit, gegnerGesundheit, unserAbstandZurNaechstenFlagge, gegnerAbstandZurNaechstenFlagge };
 	}
 
 	boolean istBesser(final int[] a, final int[] b) {
