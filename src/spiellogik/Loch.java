@@ -10,7 +10,7 @@ public final class Loch extends Feld {
 	void betreten(final Bewegbar b, final Spielzustand zustand) {
 		super.betreten(b, zustand);
 		if (b instanceof Roboter) {
-			((Roboter) b).zerstoeren(zustand);
+			((Roboter) b).zerstoeren();
 		}
 	}
 

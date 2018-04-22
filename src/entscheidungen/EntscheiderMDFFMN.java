@@ -15,57 +15,92 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 	@Override
 	public Karte[] entscheiden(final Spielzustand zustand) {
-		int freieSlots = Math.min(zustand.roboter[0].gesundheit - 1, Parameter.ZUEGE_PRO_RUNDE);
-		List<ArrayList<Karte>> per = allPermutationsOf(freieSlots, zustand.roboter[0].karten);
-		List<Karte> bestOne = new ArrayList<>();
-		int[] bestBewertung = bewerter.schlechtesterWert;
-		for (List<Karte> aktuell : per) {
-			Spielzustand aktuellerZustand = zustand;
-			for (int i = 0; i < Parameter.ZUEGE_PRO_RUNDE; i++) {
-				if (i < freieSlots) {
-					aktuellerZustand = zustand.karteSpielen(0, aktuell.get(i));
-				} else {
-					aktuellerZustand = zustand.karteSpielen(0, zustand.roboter[0].gesperrteKarten.get(i - freieSlots));
-				}
-			}
-			int[] aktuelleBewertung = bewerter.bewerten(aktuellerZustand);
-			if (bewerter.istBesser(aktuelleBewertung, bestBewertung)) {
-				bestBewertung = aktuelleBewertung;
-				bestOne = aktuell;
+		List<Karte> bestePermutation = new ArrayList<>();
+		int[] besteBewertung = this.bewerter.schlechtesterWert;
+
+		final int freieSlots = Math.min(zustand.roboter[0].gesundheit - 1, Parameter.ZUEGE_PRO_RUNDE);
+		final List<ArrayList<Karte>> permutationen = permutationenIterativ(freieSlots, zustand.roboter[0].karten);
+		for (final List<Karte> permutation : permutationen) {
+			Spielzustand zustandMitPermutation = zustand;
+			for (int i = 0; i < Parameter.ZUEGE_PRO_RUNDE; ++i) {
+				// Die dummy-Karte muss gespielt werden, da karteSpielen() nach jeder 2ten Karte
+				// den Zug beendet (Aktionsfelder, ...)
+				zustandMitPermutation = zustand
+						.karteSpielen(0,
+								i < freieSlots ? permutation.get(i) : zustand.roboter[0].spielbareKarten(i).get(0))
+						.karteSpielen(1, Karte.dummy);
 			}
 
+			final int[] bewertung = this.bewerter.bewerten(zustandMitPermutation);
+			if (this.bewerter.istBesser(bewertung, besteBewertung)) {
+				besteBewertung = bewertung;
+				bestePermutation = permutation;
+			}
 		}
-		Karte[] result = new Karte[bestOne.size()];
-		for (int i = 0; i < bestOne.size(); i++) {
-			result[i] = bestOne.get(i);
+
+		final Karte[] result = new Karte[bestePermutation.size()];
+		for (int i = 0; i < bestePermutation.size(); i++) {
+			result[i] = bestePermutation.get(i);
 		}
 		return result;
 	}
 
-	public List<ArrayList<Karte>> allPermutationsOf(int tiefe, List<Karte> karten) {
+	public List<ArrayList<Karte>> permutationen(int tiefe, List<Karte> karten) {
 		List<ArrayList<Karte>> result = new ArrayList<>();
 		if (tiefe == 0) {
-			return result;
-		}
-		if (tiefe == 1) {
-			for (int i = 0; i < karten.size(); i++) {
-				ArrayList<Karte> newList = new ArrayList<Karte>();
-				newList.add(karten.get(i));
-				result.add(newList);
+		} else if (tiefe == 1) {
+			for (final Karte karte : karten) {
+				ArrayList<Karte> permutation = new ArrayList<Karte>();
+				permutation.add(karte);
+				result.add(permutation);
 			}
 		} else {
-			List<ArrayList<Karte>> nextLayer = allPermutationsOf(tiefe - 1, karten);
-			for (ArrayList<Karte> list : nextLayer) {
-				for (Karte k : karten) {
-					ArrayList<Karte> newList = (ArrayList<Karte>) list.clone();
-					if (!newList.contains(k)) {
-						newList.add(k);
-						result.add(newList);
+			List<ArrayList<Karte>> naechsteEbene = permutationen(tiefe - 1, karten);
+			for (ArrayList<Karte> permutation : naechsteEbene) {
+				for (Karte karte : karten) {
+					if (!permutation.contains(karte)) {
+						ArrayList<Karte> erweitertePermutation = (ArrayList<Karte>) permutation.clone();
+						erweitertePermutation.add(karte);
+						result.add(erweitertePermutation);
 					}
-
 				}
 			}
 		}
+		return result;
+	}
+
+	public List<ArrayList<Karte>> permutationenIterativ(int laenge, List<Karte> karten) {
+
+		final int maximaleAnzahl = 100000000;
+
+		List<ArrayList<Karte>> result = new ArrayList<>();
+
+		for (final Karte karte : karten) {
+			ArrayList<Karte> permutation = new ArrayList<>();
+			permutation.add(karte);
+			result.add(permutation);
+		}
+
+		for (int i = 1; i < laenge; ++i) {
+			List<ArrayList<Karte>> erweitertePermutationen = new ArrayList<>();
+			
+			outerloop:
+			for (ArrayList<Karte> permutation : result) {
+				for (final Karte karte : karten) {
+					if (erweitertePermutationen.size() > (int) Math.pow(maximaleAnzahl, laenge - i)) {
+						break outerloop;
+					}
+					if (!permutation.contains(karte)) {
+						ArrayList<Karte> erweitertePermutation = (ArrayList<Karte>) permutation.clone();
+						erweitertePermutation.add(karte);
+						erweitertePermutationen.add(erweitertePermutation);
+					}
+				}
+			}
+			
+			result = erweitertePermutationen;
+		}
+
 		return result;
 	}
 

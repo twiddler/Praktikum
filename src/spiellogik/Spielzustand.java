@@ -94,7 +94,7 @@ public class Spielzustand implements Cloneable {
 		final Roboter roboter = result.roboter[besitzer];
 		roboter.drehen(karte.drehung_roboter);
 		roboter.laufen(karte.schritte, result);
-		if (!roboter.zerstoert) {
+		if (!roboter.zerstoert()) {
 			result.feldAufPosition(roboter.position).drehen(karte.drehung_feld, result.roboter);
 		}
 		roboter.karten.remove(karte);
@@ -151,7 +151,7 @@ public class Spielzustand implements Cloneable {
 
 	void respawns() {
 		for (final Roboter r : this.roboter) {
-			if (r.zerstoert) {
+			if (r.zerstoert()) {
 				r.respawn(this);
 			}
 		}

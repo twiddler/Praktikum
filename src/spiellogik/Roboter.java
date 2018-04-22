@@ -18,7 +18,6 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	public int leben;
 	public int gesundheit;
 	public int geld;
-	boolean zerstoert = false;
 	public List<Karte> karten;
 	public List<Karte> gesperrteKarten;
 	public boolean poweredDown = false;
@@ -75,7 +74,7 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	 */
 	void laufen(final int schritte, final Spielzustand zustand) {
 		for (int i = 0; i < schritte; ++i) {
-			if (zerstoert) {
+			if (this.zerstoert()) {
 				return;
 			}
 
@@ -86,24 +85,27 @@ public final class Roboter extends Bewegbar implements Cloneable {
 		}
 	}
 
+	void zerstoeren() {
+		if (!this.zerstoert()) {
+			this.gesundheit = 0;
+			--this.leben;
+		}
+	}
+	
+	boolean zerstoert() {
+		return this.gesundheit == 0;
+	}
+	
 	/**
 	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf die
 	 * nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw. auf das
 	 * Startfeld.
 	 */
-	void zerstoeren(final Spielzustand zustand) {
-		if (!this.zerstoert) {
-			this.zerstoert = true;
-			--this.leben;
-		}
-	}
-
 	void respawn(final Spielzustand zustand) {
 		if (this.leben == 0) {
 			return;
 		}
 
-		this.zerstoert = false;
 		this.gesundheit = Parameter.MAX_GESUNDHEIT_NACH_TOD;
 		this.virtuell = true;
 
@@ -117,17 +119,17 @@ public final class Roboter extends Bewegbar implements Cloneable {
 
 	@Override
 	boolean stehtAufPosition(final int position) {
-		return super.stehtAufPosition(position) && !this.zerstoert;
+		return super.stehtAufPosition(position) && !this.zerstoert();
 	}
 
 	/**
 	 * Verringert die aktuelle Gesundheit um 1. Bei 0 soll der Roboter zerstört
 	 * werden.
 	 */
-	void gesundheitVerringern(final Spielzustand zustand) {
+	void gesundheitVerringern() {
 		--this.gesundheit;
 		if (this.gesundheit <= 0) {
-			this.zerstoeren(zustand);
+			this.zerstoeren();
 		}
 	}
 

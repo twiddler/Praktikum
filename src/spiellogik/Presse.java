@@ -13,7 +13,7 @@ public final class Presse extends Zusatz {
 		if (aktivInZuegen[zustand.wievielterZug()]) {
 			for (final Roboter r : zustand.roboter) {
 				if (r.stehtAufPosition(position)) {
-					r.zerstoeren(zustand);
+					r.zerstoeren();
 				}
 			}
 		}
