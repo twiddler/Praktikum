@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -18,7 +19,6 @@ import org.json.JSONObject;
 
 import entscheidungen.Bewerter;
 import entscheidungen.Bieter;
-import entscheidungen.Entscheider;
 import entscheidungen.EntscheiderMDFFMN;
 import spiellogik.Karte;
 import spiellogik.Spielzustand;
@@ -75,10 +75,9 @@ class Client {
 			if (true) {
 				host = "localhost";
 				port = 9911;
-			}
-			else {
+			} else {
 				host = "praktss.acamar.uberspace.de";
-				port = 61064;				
+				port = 61064;
 			}
 
 			System.out.print("Spiel-ID eingeben: ");
@@ -102,7 +101,7 @@ class Client {
 			System.out.println("Eingeloggt in Spiel " + spielID + " als Spieler " + spielerID);
 
 			// Auf alle Spieler warten, dann ersten Spielzustand erhalten
-			final Entscheider entscheider = new EntscheiderMDFFMN(new Bewerter());
+			final EntscheiderMDFFMN entscheider = new EntscheiderMDFFMN(new Bewerter());
 			final JSONObject ersteRunde = naechsteNachricht(in);
 			Spielzustand zustand = Parser.ersteRunde(ersteRunde, spielerID);
 			List<Karte> bietoptionen = Parser.bietoptionen(ersteRunde.getJSONArray("bietoptionen"));
@@ -121,9 +120,18 @@ class Client {
 
 				// -> Programm
 				zustand.handkartenSortieren();
+				long start = System.nanoTime();
 				final JSONObject programm = Serialisierer
 						.programm(powereddown ? new Karte[0] : entscheider.entscheiden(zustand));
 				out.println(datenVerpacken(programm));
+				if (!powereddown) {
+					long ende = System.nanoTime();
+					double deltaS = ((double) (ende - start)) / 1000000000;
+					double permProS = ((double) entscheider.letzteAnzahl) / deltaS;
+					DecimalFormat format = new DecimalFormat("0.#E0");
+					System.out.println("Zeit [s], Permutationen, Perm./Zeit [/s], [/min]: " + format.format(deltaS)
+							+ ", " + entscheider.letzteAnzahl + ", " + format.format(permProS) + ", " + format.format(permProS * 60));
+				}
 
 				// <- Gespielte Runde (Programme, ..., Sieger)
 				zustand = Parser.nteRunde(naechsteNachricht(in), spielerID, zustand);
@@ -150,7 +158,7 @@ class Client {
 		do {
 			nachricht = in.readLine();
 		} while (nachricht.isEmpty());
-		System.out.println("<  " + (new JSONObject(nachricht)).toString());
+		// System.out.println("< " + (new JSONObject(nachricht)).toString());
 		return new JSONObject(nachricht);
 	}
 
@@ -174,7 +182,7 @@ class Client {
 		result.put("daten", daten);
 		result.put("message", "");
 
-		System.out.println(" > " + result.toString());
+		// System.out.println(" > " + result.toString());
 
 		return result.toString() + "\n\n";
 

@@ -83,7 +83,7 @@ public class Parser {
 			// Informationen aus dem Spielerarray
 			final JSONObject spielerObject = spielerJSON.getJSONObject(i);
 			final int leben = spielerObject.getInt("leben");
-			final int naechsteFlagge = spielerObject.getInt("nextFlag");
+			final int naechsteFlagge = spielerObject.getInt("nextFlag") - 1;
 			final List<Karte> karten = kartenParsen(spielerObject.getJSONArray("karten"));
 
 			result[roboterID] = new Roboter(position, blickrichtung, leben, gesundheit, startgeld, naechsteFlagge,

@@ -29,7 +29,7 @@ public final class Flagge extends Bewegbar implements Cloneable {
 	void beruehren(final Roboter roboter, final Spielzustand zustand) {
 		if (roboter.stehtAufPosition(this.position) && this.nummer == roboter.naechsteFlagge) {
 			if (this.nummer < zustand.flaggen.length - 1 || zustand.istLetzterZug()) {
-				++roboter.naechsteFlagge;
+				roboter.naechsteFlagge = this.nummer + 1;
 			}
 		}
 	}

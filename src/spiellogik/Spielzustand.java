@@ -185,7 +185,7 @@ public class Spielzustand implements Cloneable {
 	public int wievielterZug() {
 		return this.gespielteKarten / 2;
 	}
-	
+
 	boolean istLetzterZug() {
 		return this.wievielterZug() == Parameter.ZUEGE_PRO_RUNDE - 1;
 	}
@@ -196,11 +196,14 @@ public class Spielzustand implements Cloneable {
 	 */
 	public int abstandZurNaechstenFlagge(final int besitzer) {
 		final Roboter roboter = this.roboter[besitzer];
-		final Flagge flagge = this.flaggen[roboter.naechsteFlagge];
 
-		if (roboter.position == -1)
+		if (roboter.naechsteFlagge == this.flaggen.length)
+			return 0;
+
+		if (roboter.zerstoert())
 			return Integer.MAX_VALUE;
 
+		final Flagge flagge = this.flaggen[roboter.naechsteFlagge];
 		Feld feld = this.feldAufPosition(roboter.position);
 
 		for (int ring = 1; ring < Parameter.ANZAHL_SPIELFELDRINGE; ++ring) {

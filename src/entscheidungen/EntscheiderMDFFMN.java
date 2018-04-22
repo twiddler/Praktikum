@@ -9,6 +9,9 @@ import spiellogik.Spielzustand;
 
 public class EntscheiderMDFFMN extends Entscheider {
 
+	public final long maximaleAnzahl = (long) (3E9 * 100);
+	public long letzteAnzahl = 0;
+
 	public EntscheiderMDFFMN(Bewerter bewerter) {
 		super(bewerter);
 	}
@@ -71,8 +74,6 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 	public List<ArrayList<Karte>> permutationenIterativ(int laenge, List<Karte> karten) {
 
-		final int maximaleAnzahl = 100000000;
-
 		List<ArrayList<Karte>> result = new ArrayList<>();
 
 		for (final Karte karte : karten) {
@@ -83,11 +84,10 @@ public class EntscheiderMDFFMN extends Entscheider {
 
 		for (int i = 1; i < laenge; ++i) {
 			List<ArrayList<Karte>> erweitertePermutationen = new ArrayList<>();
-			
-			outerloop:
-			for (ArrayList<Karte> permutation : result) {
+
+			outerloop: for (ArrayList<Karte> permutation : result) {
 				for (final Karte karte : karten) {
-					if (erweitertePermutationen.size() > (int) Math.pow(maximaleAnzahl, laenge - i)) {
+					if (erweitertePermutationen.size() >= (int) Math.pow(this.maximaleAnzahl, laenge - i)) {
 						break outerloop;
 					}
 					if (!permutation.contains(karte)) {
@@ -97,10 +97,11 @@ public class EntscheiderMDFFMN extends Entscheider {
 					}
 				}
 			}
-			
+
 			result = erweitertePermutationen;
 		}
 
+		this.letzteAnzahl = result.size();
 		return result;
 	}
 
