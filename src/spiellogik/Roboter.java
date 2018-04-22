@@ -91,11 +91,11 @@ public final class Roboter extends Bewegbar implements Cloneable {
 			--this.leben;
 		}
 	}
-	
+
 	boolean zerstoert() {
 		return this.gesundheit == 0;
 	}
-	
+
 	/**
 	 * Dekrementiert das Leben des Roboters, setzt seine Gesundheitspunkte auf die
 	 * nach einem Respawn, und stellt ihn zur zuletzt erreichten Flagge bzw. auf das
@@ -123,18 +123,20 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	}
 
 	/**
-	 * Verringert die aktuelle Gesundheit um 1. Bei 0 soll der Roboter zerstört
-	 * werden.
+	 * Verringert die Gesundheit um 1, und zerstört falls sie dann 0 ist.
 	 */
-	void gesundheitVerringern() {
+	void schaedigen() {
 		--this.gesundheit;
 		if (this.gesundheit <= 0) {
 			this.zerstoeren();
 		}
 	}
 
+	/**
+	 * Erhöht die Gesundheit um 1 (höchstens bis auf das Maximum).
+	 */
 	void reparieren() {
-		this.gesundheit += Parameter.REPARATUR_BRINGT_GESUNDHEIT;
+		++this.gesundheit;
 		if (this.gesundheit > Parameter.MAX_GESUNDHEIT) {
 			this.gesundheit = Parameter.MAX_GESUNDHEIT;
 		}
@@ -145,14 +147,16 @@ public final class Roboter extends Bewegbar implements Cloneable {
 	}
 
 	/**
-	 * Feuert den Laser des Roboters.
+	 * Feuert den Laser des Roboters falls er noch lebt.
 	 */
 	void lasern(final Spielzustand zustand) {
-		final Feld feld = zustand.feldAufPosition(this.position);
-		final Feld nachbar = zustand.feldAufPosition(feld.nachbarn[this.blickrichtung]);
-		if (feld.kanteInRichtung(this.blickrichtung).rauslaserbar()
-				&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
-			nachbar.durchlasern(this.blickrichtung, zustand, false);
+		if (!this.zerstoert()) {
+			final Feld feld = zustand.feldAufPosition(this.position);
+			final Feld nachbar = zustand.feldAufPosition(feld.nachbarn[this.blickrichtung]);
+			if (feld.kanteInRichtung(this.blickrichtung).rauslaserbar()
+					&& nachbar.kanteInRichtung((this.blickrichtung + 3) % 6).reinlaserbar()) {
+				nachbar.durchlasern(this.blickrichtung, zustand, false);
+			}
 		}
 	}
 

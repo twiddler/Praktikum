@@ -24,7 +24,7 @@ public class Spielzustand implements Cloneable {
 	/**
 	 * Flaggen in aufsteigender Reihenfolge
 	 */
-	Flagge[] flaggen;
+	public Flagge[] flaggen;
 
 	/**
 	 * Wieviele Karten schon gespielt wurden. Wird benutzt um zu bestimmen der

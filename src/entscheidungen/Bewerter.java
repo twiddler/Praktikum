@@ -1,6 +1,5 @@
 package entscheidungen;
 
-import spiellogik.Parameter;
 import spiellogik.Roboter;
 import spiellogik.Spielzustand;
 
@@ -33,8 +32,8 @@ public class Bewerter {
 		final Roboter wir = zustand.roboter[0];
 		final Roboter gegner = zustand.roboter[1];
 
-		final boolean wirGewinnen = wir.naechsteFlagge == Parameter.ANZAHL_FLAGGEN;
-		final boolean gegnerGewinntNicht = gegner.naechsteFlagge < Parameter.ANZAHL_FLAGGEN;
+		final boolean wirGewinnen = wir.naechsteFlagge == zustand.flaggen.length;
+		final boolean gegnerGewinntNicht = gegner.naechsteFlagge < zustand.flaggen.length;
 		final boolean wirLebenNoch = wir.leben > 0;
 		final boolean gegnerLebtNichtMehr = gegner.leben == 0;
 		final int unsereNaechsteFlagge = wir.naechsteFlagge;

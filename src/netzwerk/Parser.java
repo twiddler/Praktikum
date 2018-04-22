@@ -2,6 +2,9 @@ package netzwerk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -74,6 +77,7 @@ public class Parser {
 			final int position = positionRichtung.getInt("feldindex");
 			final int blickrichtung = positionRichtung.getInt("richtung");
 			final int gesundheit = roboterObject.getInt("gesundheit");
+			Parameter.MAX_GESUNDHEIT = gesundheit;
 			final boolean virtuell = roboterObject.getBoolean("virtuell");
 
 			// Informationen aus dem Spielerarray
@@ -244,16 +248,22 @@ public class Parser {
 
 	}
 
+	/**
+	 * Gibt ein Array mit allen Flaggen zurück.
+	 */
 	static Flagge[] flaggenParsen(JSONArray felder) {
 
-		final Flagge[] result = new Flagge[Parameter.ANZAHL_FLAGGEN];
-
-		for (int i = 0; i < felder.length(); i++) {
-			final JSONObject feld = felder.getJSONObject(i);
-			final int flaggenNr = feld.getJSONObject("zusaetze").getInt("flagge");
+		final SortedMap<Integer, Flagge> flaggen = new TreeMap<>();
+		for (int i = 0; i < felder.length(); ++i) {
+			final int flaggenNr = felder.getJSONObject(i).getJSONObject("zusaetze").getInt("flagge");
 			if (flaggenNr != 0) {
-				result[flaggenNr - 1] = new Flagge(i, flaggenNr - 1);
+				flaggen.put(flaggenNr, new Flagge(i, flaggenNr - 1));
 			}
+		}
+
+		final Flagge[] result = new Flagge[flaggen.size()];
+		for (Map.Entry<Integer, Flagge> entry : flaggen.entrySet()) {
+			result[entry.getKey() - 1] = entry.getValue();
 		}
 
 		return result;
@@ -278,7 +288,8 @@ public class Parser {
 
 		final Roboter[] roboter = roboterParsen(json.getInt("startgeld"), json.getJSONArray("spieler"),
 				json.getJSONArray("roboter"), unsereID);
-		Parameter.ANZAHL_SPIELFELDRINGE = (int) (1d / 2 + Math.sqrt(1d / 4 + (json.getJSONArray("spielbrett").length() - 1) / 3));
+		Parameter.ANZAHL_SPIELFELDRINGE = (int) (1d / 2
+				+ Math.sqrt(1d / 4 + (json.getJSONArray("spielbrett").length() - 1) / 3));
 		final Feld[] felder = felderParsen(json.getJSONArray("spielbrett"));
 		final Flagge[] flaggen = flaggenParsen(json.getJSONArray("spielbrett"));
 

@@ -158,7 +158,7 @@ public class Feld implements Cloneable {
 		boolean roboterGetroffen = false;
 		for (final Roboter r : zustand.roboter) {
 			if (r.stehtAufPosition(this.position) && (!r.virtuell || trifftVirtuelleRoboter)) {
-				r.gesundheitVerringern();
+				r.schaedigen();
 				roboterGetroffen = true;
 			}
 		}
